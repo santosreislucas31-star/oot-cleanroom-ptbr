@@ -58,3 +58,18 @@ JPEG blanked; it is made from your ROM and not in this repository.
 This repository contains no ROM data other than the coarse facts in `games/oot/spec`. All textures, fonts,
 icons, pictures and samples are generated. The engine is Ship of Harkinian (built on the zeldaret/oot
 decompilation). The Legend of Zelda is a trademark of Nintendo; this project is not affiliated with Nintendo.
+
+## Build PT-BR version in GitHub Actions (no local ROM)
+
+A manual cloud-build workflow is available at **Actions → Build PT-BR web game → Run workflow**.
+It builds the Emscripten engine, installs the bundled PT-BR sources, and uploads the browser
+site as the `ocarina-ptbr-web` artifact (kept for 7 days).
+
+The workflow attempts to retrieve the already-published clean-room `soh.o2r` and `oot.o2r`
+archives from the upstream project's public GitHub Pages site at run time. These archives are
+not copied into this repository. If either upstream file is unavailable, the workflow stops
+before compilation. This avoids requiring a ROM or a local Emscripten installation, but it
+depends on the upstream archive URLs remaining available.
+
+This is an initial build path, not a verified release: the PT-BR message code still needs a
+successful compile and in-browser test before the translation can be considered playable.
