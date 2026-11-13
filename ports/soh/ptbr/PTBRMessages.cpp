@@ -6,7 +6,6 @@
 #include "soh/Enhancements/game-interactor/GameInteractor.h"
 #include "soh/Enhancements/game-interactor/GameInteractor_Hooks.h"
 #include "soh/ShipInit.hpp"
-#include "PTBRFont.h"
 
 #include <cstdint>
 #include <iostream>
@@ -347,103 +346,36 @@ bool DecodeUtf8(std::string_view input, size_t& position, uint32_t& codePoint) {
 }
 
 bool AppendTextCodePoint(std::string& raw, uint32_t codePoint) {
-    if (codePoint < 0x80) {
-        raw.push_back(static_cast<char>(codePoint));
-        return true;
-    }
-
+    // The original OoT message font does not reliably render these extended
+    // glyph slots in the web build. Transliterate to plain ASCII so dialogue
+    // remains readable and never loses characters during gameplay.
     switch (codePoint) {
-        case U'À':
-            raw.push_back(static_cast<char>(0x80));
+        case U'À': case U'Á': case U'Â': case U'Ã':
+        case U'à': case U'á': case U'â': case U'ã':
+            raw.push_back((codePoint >= U'à' && codePoint <= U'ã') ? 'a' : 'A');
             return true;
-        case U'Á':
-            raw.push_back(static_cast<char>(0x81));
+        case U'Ç': case U'ç':
+            raw.push_back(codePoint == U'ç' ? 'c' : 'C');
             return true;
-        case U'Â':
-            raw.push_back(static_cast<char>(0x82));
+        case U'È': case U'É': case U'Ê': case U'Ë':
+        case U'è': case U'é': case U'ê': case U'ë':
+            raw.push_back((codePoint >= U'è' && codePoint <= U'ë') ? 'e' : 'E');
             return true;
-        case U'Ã':
-            raw.push_back(static_cast<char>(0x83));
+        case U'Í': case U'í':
+            raw.push_back(codePoint == U'í' ? 'i' : 'I');
             return true;
-        case U'Ç':
-            raw.push_back(static_cast<char>(0x84));
+        case U'Ó': case U'Ô': case U'Õ':
+        case U'ó': case U'ô': case U'õ':
+            raw.push_back((codePoint >= U'ó' && codePoint <= U'õ') ? 'o' : 'O');
             return true;
-        case U'È':
-            raw.push_back(static_cast<char>(0x85));
-            return true;
-        case U'É':
-            raw.push_back(static_cast<char>(0x86));
-            return true;
-        case U'Ê':
-            raw.push_back(static_cast<char>(0x87));
-            return true;
-        case U'Ë':
-            raw.push_back(static_cast<char>(0x88));
-            return true;
-        case U'Í':
-            raw.push_back(static_cast<char>(0x89));
-            return true;
-        case U'Ó':
-            raw.push_back(static_cast<char>(0x8B));
-            return true;
-        case U'Ô':
-            raw.push_back(static_cast<char>(0x8A));
-            return true;
-        case U'Õ':
-            raw.push_back(static_cast<char>(0x8C));
-            return true;
-        case U'Ú':
-            raw.push_back(static_cast<char>(0x8D));
-            return true;
-        case U'Ü':
-            raw.push_back(static_cast<char>(0x8E));
-            return true;
-        case U'à':
-            raw.push_back(static_cast<char>(0x90));
-            return true;
-        case U'á':
-            raw.push_back(static_cast<char>(0x91));
-            return true;
-        case U'â':
-            raw.push_back(static_cast<char>(0x92));
-            return true;
-        case U'ã':
-            raw.push_back(static_cast<char>(0x93));
-            return true;
-        case U'ç':
-            raw.push_back(static_cast<char>(0x94));
-            return true;
-        case U'è':
-            raw.push_back(static_cast<char>(0x95));
-            return true;
-        case U'é':
-            raw.push_back(static_cast<char>(0x96));
-            return true;
-        case U'ê':
-            raw.push_back(static_cast<char>(0x97));
-            return true;
-        case U'ë':
-            raw.push_back(static_cast<char>(0x98));
-            return true;
-        case U'í':
-            raw.push_back(static_cast<char>(0x99));
-            return true;
-        case U'ó':
-            raw.push_back(static_cast<char>(0x9B));
-            return true;
-        case U'ô':
-            raw.push_back(static_cast<char>(0x9A));
-            return true;
-        case U'õ':
-            raw.push_back(static_cast<char>(0x9C));
-            return true;
-        case U'ú':
-            raw.push_back(static_cast<char>(0x9D));
-            return true;
-        case U'ü':
-            raw.push_back(static_cast<char>(0x9E));
+        case U'Ú': case U'Ü': case U'ú': case U'ü':
+            raw.push_back((codePoint == U'ú' || codePoint == U'ü') ? 'u' : 'U');
             return true;
         default:
+            if (codePoint < 0x80) {
+                raw.push_back(static_cast<char>(codePoint));
+                return true;
+            }
             return false;
     }
 }
@@ -527,7 +459,6 @@ void PTBR_OnOpenText(
         static_cast<TextBoxPosition>(data->typePos & 0x0F)
     );
 
-    PTBR_EnsureFont();
     translated.LoadIntoFont();
 
     *loadFromMessageTable = false;
