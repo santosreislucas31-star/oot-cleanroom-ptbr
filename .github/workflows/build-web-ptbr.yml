@@ -74,7 +74,7 @@ jobs:
           test -s resource-input/soh-clean.o2r
 
       - name: Restore incremental Emscripten build
-        uses: actions/cache@v5
+        uses: actions/cache/restore@v5
         with:
           path: build-web
           key: web-${{ runner.os }}-emsdk-6.0.10-${{ github.sha }}
@@ -91,6 +91,13 @@ jobs:
 
       - name: Compile Ship of Harkinian
         run: emmake cmake --build build-web --target soh --parallel 2
+
+      - name: Save incremental Emscripten build
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: build-web
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ github.sha }}
 
       - name: Assemble browser site
         run: |
