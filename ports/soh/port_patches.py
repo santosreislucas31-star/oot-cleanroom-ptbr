@@ -5,7 +5,9 @@
 Idempotent text patches. Build flags (see STATUS.md) are passed by the build
 script: -DFMT_CONSTEVAL= (old bundled fmt vs new clang), -DBUILD_SHARED_LIBS=OFF.
 """
+import filecmp
 import os
+import shutil
 import sys
 
 PATCHES = [
@@ -89,8 +91,35 @@ INCLUDES = ("soh/soh/web/web_main.cpp", '#include "soh/Extractor/Extract.h"' + N
                      '#include "functions.h"', '#include "macros.h"', '}', '']))
 
 
+PTBR_SOURCE = os.path.join(os.path.dirname(__file__), "ptbr")
+PTBR_DEST = os.path.join("soh", "soh", "Enhancements", "PTBR")
+PTBR_FILES = (
+    "PTBRData.cpp", "PTBRData_0000_0FFF.cpp", "PTBRData_1000_1FFF.cpp",
+    "PTBRData_2000_3FFF.cpp", "PTBRData_4000_FFFF.cpp", "PTBRMessages.cpp",
+    "PTBRData.h", "PTBRDataChunks.h", "PTBRMessages.h", "PTBRFont.h",
+    "PTBRFontGlyphs.h",
+)
+
+
+def install_ptbr_sources(root):
+    """Copy the bundled PT-BR message table and glyph support into the SoH tree."""
+    destination = os.path.join(root, PTBR_DEST)
+    os.makedirs(destination, exist_ok=True)
+    copied = 0
+    for name in PTBR_FILES:
+        source = os.path.join(PTBR_SOURCE, name)
+        target = os.path.join(destination, name)
+        if not os.path.isfile(source):
+            raise FileNotFoundError("PT-BR source is missing: " + source)
+        if not os.path.isfile(target) or not filecmp.cmp(source, target, shallow=False):
+            shutil.copy2(source, target)
+            copied += 1
+    return copied
+
+
 def main(argv):
     root = argv[1]
+    copied = install_ptbr_sources(root)
     done = 0
     for rel, old, new in PATCHES + [INCLUDES]:
         p = os.path.join(root, rel)
