@@ -25,11 +25,11 @@ FIX = {
     "QuestionMarkTitleCard": "???", "ThievesHideoutTitleCard": "Esconderijo dos Ladrões",
     "LakesideLaboratoryTitleCard": "Laboratório à Beira do Lago",
     # boss title cards (name | subtitle)
-    "BarinadeTitleCard": "Bio-Electric Anemone|Barinade", "VolvagiaBossTitleCard": "Subterranean Lava Dragon|Volvagia",
-    "PhantomGanonTitleCard": "Evil Spirit from Beyond|Phantom Ganon", "GanondorfTitleCard": "Great King of Evil|Ganondorf",
-    "GanonTitleCard": "Ganon", "GohmaTitleCard": "Parasitic Armored Arachnid|Gohma",
-    "KingDodongoTitleCard": "Infernal Dinosaur|King Dodongo", "MorphaTitleCard": "Giant Aquatic Amoeba|Morpha",
-    "BongoTitleCard": "Phantom Shadow Beast|Bongo Bongo", "TwinrovaTitleCard": "Sorceress Sisters|Twinrova",
+    "BarinadeTitleCard": "Anêmona Bioelétrica|Barinade", "VolvagiaBossTitleCard": "Dragão de Lava Subterrâneo|Volvagia",
+    "PhantomGanonTitleCard": "Espírito Maligno do Além|Phantom Ganon", "GanondorfTitleCard": "Grande Rei do Mal|Ganondorf",
+    "GanonTitleCard": "Ganon", "GohmaTitleCard": "Aracnídeo Blindado Parasita|Gohma",
+    "KingDodongoTitleCard": "Dinossauro Infernal|Rei Dodongo", "MorphaTitleCard": "Ameba Aquática Gigante|Morpha",
+    "BongoTitleCard": "Fera das Sombras Fantasmagórica|Bongo Bongo", "TwinrovaTitleCard": "Irmãs Feiticeiras|Twinrova",
     # item names
     "BiggoronsSwordItemName": "Espada de Biggoron", "BombBag20ItemName": "Bolsa de Bombas", "BombBag30ItemName": "Bolsa Grande de Bombas",
     "BombBag40ItemName": "Maior Bolsa de Bombas", "BombItemName": "Bomba", "BombchuItemName": "Bombchu",
