@@ -144,6 +144,74 @@ def _split(name):
     return s[0].upper() + s[1:] if s else s
 
 
+# Conservative Portuguese vocabulary for ENG texture labels without a FIX entry.
+_PT_PHRASES = {
+    "death mountain": "Montanha da Morte",
+    "lost woods": "Bosque Perdido",
+    "forest temple": "Templo da Floresta",
+    "fire temple": "Templo do Fogo",
+    "water temple": "Templo da Água",
+    "shadow temple": "Templo das Sombras",
+    "spirit temple": "Templo do Espírito",
+    "temple of time": "Templo do Tempo",
+    "hyrule field": "Campo de Hyrule",
+    "kakariko village": "Vila Kakariko",
+    "gerudo valley": "Vale Gerudo",
+    "bottom of the well": "Fundo do Poço",
+    "haunted wasteland": "Deserto Assombrado",
+    "desert colossus": "Colosso do Deserto",
+    "lon lon ranch": "Fazenda Lon Lon",
+    "royal familys tomb": "Túmulo da Família Real",
+}
+
+_PT_WORDS = {
+    "inside": "Dentro", "temple": "Templo", "forest": "Floresta",
+    "fire": "Fogo", "water": "Água", "shadow": "Sombras",
+    "spirit": "Espírito", "ice": "Gelo", "cavern": "Caverna",
+    "cave": "Caverna", "village": "Vila", "town": "Cidade",
+    "shop": "Loja", "house": "Casa", "lake": "Lago",
+    "mountain": "Montanha", "river": "Rio", "field": "Campo",
+    "desert": "Deserto", "castle": "Castelo", "fountain": "Fonte",
+    "valley": "Vale", "tomb": "Túmulo", "graveyard": "Cemitério",
+    "ranch": "Fazenda", "island": "Ilha", "bridge": "Ponte",
+    "market": "Mercado", "entrance": "Entrada", "exit": "Saída",
+    "room": "Sala", "boss": "Chefe", "key": "Chave", "map": "Mapa",
+    "compass": "Bússola", "heart": "Coração", "piece": "Pedaço",
+    "bottle": "Garrafa", "mask": "Máscara", "sword": "Espada",
+    "shield": "Escudo", "boots": "Botas", "tunic": "Túnica",
+    "arrow": "Flecha", "bomb": "Bomba", "song": "Canção",
+    "letter": "Carta", "egg": "Ovo", "potion": "Poção",
+    "mushroom": "Cogumelo", "fairy": "Fada", "giant": "Gigante",
+    "great": "Grande", "small": "Pequeno", "hidden": "Escondido",
+    "secret": "Secreto", "training": "Treinamento", "alley": "Beco",
+    "bowling": "Boliche", "laboratory": "Laboratório",
+    "fortress": "Fortaleza", "hideout": "Esconderijo", "well": "Poço",
+    "chamber": "Câmara", "sages": "Sábios", "thieves": "Ladrões",
+    "treasure": "Tesouro", "box": "Baú", "pond": "Lago",
+    "domain": "Domínio", "woods": "Bosque", "lost": "Perdido",
+    "haunted": "Assombrado", "gerudo": "Gerudo", "zora": "Zora",
+    "goron": "Goron", "hyrule": "Hyrule", "kokiri": "Kokiri",
+    "deku": "Deku", "time": "Tempo", "light": "Luz", "death": "Morte",
+    "sacred": "Sagrado", "royal": "Real", "family": "Família",
+    "king": "Rei", "dragon": "Dragão", "select": "Selecionar",
+    "save": "Salvar", "quit": "Sair", "open": "Abrir",
+    "speak": "Falar", "check": "Verificar", "enter": "Entrar",
+    "attack": "Atacar", "grab": "Pegar", "throw": "Arremessar",
+    "climb": "Escalar", "dive": "Mergulhar", "jump": "Pular",
+}
+
+
+def _translate_fallback(text):
+    phrase = _PT_PHRASES.get(text.casefold())
+    if phrase:
+        return phrase
+    return re.sub(
+        r"[A-Za-zÀ-ÿ]+",
+        lambda m: _PT_WORDS.get(m.group(0).casefold(), m.group(0)),
+        text,
+    )
+
+
 def key(path):
     base = path.rsplit("/", 1)[1]
     k = re.sub(r"(ENGNTSC|ENG)?Tex$", "", base)
@@ -162,5 +230,5 @@ def label(path):
         return None
     for suf in ("DoAction", "TitleCard", "ItemName", "PositionName", "PointName"):
         if k.endswith(suf):
-            return [_split(k[:-len(suf)])]
+            return [_translate_fallback(_split(k[:-len(suf)]))]
     return None
