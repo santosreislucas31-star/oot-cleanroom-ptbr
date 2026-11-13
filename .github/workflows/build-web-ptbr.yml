@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Checkout PT-BR project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Checkout Emscripten web engine
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
             resource-input/oot.o2r site
 
       - name: Upload playable web build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ocarina-ptbr-web
           path: site/
