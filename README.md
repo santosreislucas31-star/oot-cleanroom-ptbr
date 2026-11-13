@@ -1,75 +1,90 @@
-# The Legend of Zelda: Ocarina of Time — clean room web build
+# Ocarina of Time PT-BR — versão para navegador
 
-Play: **https://andrewnakas.github.io/oot-cleanroom/**
+Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com diálogos em português brasileiro.
 
-Ocarina of Time running in the browser (the [Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)
-engine, [zalo's Emscripten/WebGL fork](https://github.com/zalo/Shipwright)), with **every asset the ROM
-extraction would produce regenerated**: textures, fonts, icons, pictures, instrument and sound-effect
-samples, prerendered backgrounds. No ROM is needed to play.
+<p align="center">
+  <a href="https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/"><strong>▶ JOGAR AGORA</strong></a>
+</p>
 
-Controls: `W A S D` stick · `X` A · `C` B · `Z` Z · `Space` Start · arrow keys C buttons · `T F G H` D-pad ·
-`Esc` SoH menu · gamepads work. Saves stay in the browser.
+**[Abrir o jogo](https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/)** · **[Ver o código-fonte](https://github.com/santosreislucas31-star/oot-cleanroom-ptbr)** · **[Acompanhar as compilações](https://github.com/santosreislucas31-star/oot-cleanroom-ptbr/actions)**
 
-## What is kept, what is generated
+---
 
-The game reads its data from `oot.o2r`, the archive SoH normally extracts from your ROM. This project
-extracts it **once, in a dirty room** (`games/oot/extract_spec.py`), keeps only coarse facts, and
-builds a new archive from those facts (`games/oot/generate.py`):
+## Sobre o projeto
 
-| Asset (count) | Kept fact | Generated |
-|---|---|---|
-| Textures (12,655) | format, size, a 4×4 colour grid (16×16 for ≥128 px and skies), a 2-bit alpha outline, palette links | colour from the grid, our noise detail and dither; palettes are fitted to the clean images (k-means) and re-indexed |
-| Message font (139), Shift-JIS font (3,974) | the character (from the decomp's names / Shift-JIS code) | typeset with OFL fonts (Marcellus, Noto Sans JP); button glyphs drawn |
-| Text in textures: item/area/place names, action labels, file select, pause headers (~400) | the words (from the decomp's names and the game's text) | re-typeset (`labels.py`, `drawn.py`, Montserrat) |
-| Eyes and mouths (≈300) | alpha outline, state from the name (open/half/closed/looking/shocked…) | painted from our own colour briefs (`face_briefs.json`, `faces.py`) |
-| Item icons (84) | — | rendered from the game's own get-item 3D models with our textures (`dlrender.py`, `icons.py`) |
-| Prerendered backgrounds (35 JPEG) | size, 16×16 colour grid | colour from the grid plus noise |
-| Samples (449; ADPCM and 2-bit ADPCM) | length, loop points, codec, a coarse spectral outline, median pitch | resynthesised; our own 2-predictor VADPCM codebooks |
-| Geometry, collision, animation, scenes, text, note sequences, soundfont definitions | kept (user scope) | — |
+Este repositório mantém uma versão web de Ocarina of Time baseada no projeto **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador desenvolvido no fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**.
 
-`games/oot/taint_report.py` scans every regenerated texture (raw and decoded RGBA), sample (raw and PCM)
-and background (decoded RGB) against the retail extraction, plus SoH's own `soh.o2r`, for shared byte runs
-of 32 bytes or more: **0 failing**.
+O trabalho parte da base **[andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom)**, que reconstrói os recursos necessários ao jogo em um formato clean-room. Esta adaptação integra dados de diálogos em PT-BR, ajustes para a execução no navegador e um fluxo automatizado de compilação e publicação.
 
-## Build (Windows, Git Bash)
+O objetivo é deixar uma versão jogável acessível por um link, sem exigir que a pessoa configure um ambiente de desenvolvimento ou forneça uma ROM ao site.
 
-```sh
-# engine: zalo/Shipwright feature/emscripten-web-port (+ submodules), emsdk
-python -m ports.soh.port_patches sohweb          # dev hooks, no extractor preload
-emcmake cmake -B build-web -S sohweb -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_OPENGLES=ON \
-   -DBUILD_SHARED_LIBS=OFF "-DCMAKE_CXX_FLAGS=-DFMT_CONSTEVAL=" ... && cmake --build build-web --target soh
+## Como jogar
 
-# dirty room, once: extract oot.o2r from your own ROM (SoH's extractor), never published
-python -m games.oot.extract_spec dirty/oot.o2r sohweb/soh/assets/xml/N64_NTSC_12 games/oot/spec spec_local
+1. Abra **[o jogo no navegador](https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/)**.
+2. Aguarde o carregamento inicial dos arquivos. Na primeira visita, isso pode levar alguns minutos dependendo da conexão.
+3. Use o teclado ou conecte um controle compatível.
 
-# clean room
-python -m games.oot.generate games/oot/spec spec_local/kept.o2r clean/oot.o2r
-python -m games.oot.icons clean/oot.o2r games/oot/overrides/icons     # then generate again (--only tex --base)
-python -m ports.soh.clean_soh sohweb/soh/soh/web/soh.o2r clean/soh.o2r
-python -m games.oot.taint_report dirty/oot.o2r clean/oot.o2r clean/soh.o2r
-python ports/soh/make_site.py build-web/soh clean/soh.o2r clean/oot.o2r site
-```
+### Controles padrão
 
-`spec_local/kept.o2r` holds the kept facts (geometry, text, sequences…) with every texel, sample and
-JPEG blanked; it is made from your ROM and not in this repository.
+| Ação | Tecla |
+|---|---|
+| Analógico / movimento | W A S D |
+| Botão A | X |
+| Botão B | C |
+| Botão Z | Z |
+| Start | Espaço |
+| Botões C | Setas direcionais |
+| Direcional (D-pad) | T F G H |
+| Menu do Ship of Harkinian | Esc |
 
-## Legal note
+Controles de jogo compatíveis também podem ser usados.
 
-This repository contains no ROM data other than the coarse facts in `games/oot/spec`. All textures, fonts,
-icons, pictures and samples are generated. The engine is Ship of Harkinian (built on the zeldaret/oot
-decompilation). The Legend of Zelda is a trademark of Nintendo; this project is not affiliated with Nintendo.
+## Português brasileiro
 
-## Build PT-BR version in GitHub Actions (no local ROM)
+A integração PT-BR inclui os dados de mensagens e o código que os incorpora ao port web. A versão atual prioriza a legibilidade durante a gameplay: por uma limitação de renderização da fonte no navegador, caracteres acentuados são convertidos para equivalentes sem acento (por exemplo, **“coração” → “coracao”**).
 
-A manual cloud-build workflow is available at **Actions → Build PT-BR web game → Run workflow**.
-It builds the Emscripten engine, installs the bundled PT-BR sources, and uploads the browser
-site as the `ocarina-ptbr-web` artifact (kept for 7 days).
+Isso significa que o texto está em português, mas a acentuação gráfica ainda não está completa. A correção da fonte e a compatibilidade dos caracteres continuam sendo pontos de melhoria.
 
-The workflow attempts to retrieve the already-published clean-room `soh.o2r` and `oot.o2r`
-archives from the upstream project's public GitHub Pages site at run time. These archives are
-not copied into this repository. If either upstream file is unavailable, the workflow stops
-before compilation. This avoids requiring a ROM or a local Emscripten installation, but it
-depends on the upstream archive URLs remaining available.
+## Tecnologias e fluxo de publicação
 
-This is an initial build path, not a verified release: the PT-BR message code still needs a
-successful compile and in-browser test before the translation can be considered playable.
+- **C/C++** — código do motor do jogo.
+- **Ship of Harkinian** — engine usada para executar Ocarina of Time.
+- **Emscripten / WebAssembly** — compilação do código para execução no navegador.
+- **WebGL** — renderização gráfica no navegador.
+- **Python** — validações, preparação dos recursos e aplicação dos patches.
+- **GitHub Actions** — compila o projeto nos servidores do GitHub.
+- **GitHub Pages** — hospeda a versão web publicada.
+
+O workflow **Build PT-BR web game** executa a validação dos dados, prepara os recursos, compila o projeto e publica o conteúdo gerado no GitHub Pages. A execução é iniciada manualmente pela aba **Actions**.
+
+## Estrutura relacionada ao PT-BR
+
+- `ports/soh/ptbr/` — dados e cabeçalhos da integração de mensagens e fonte.
+- `ports/soh/port_patches.py` — aplica as alterações necessárias ao código do port web.
+- `ports/soh/validate_ptbr.py` — valida os dados de mensagens antes da compilação.
+- `.github/workflows/build-web-ptbr.yml` — pipeline de compilação e deploy.
+- `ports/soh/make_site.py` — reúne os arquivos compilados em um site estático.
+
+## Créditos e licenças
+
+Este trabalho é uma adaptação de projetos existentes, não uma engine criada do zero.
+
+- **Ship of Harkinian:** [HarbourMasters/Shipwright](https://github.com/HarbourMasters/Shipwright).
+- **Port Emscripten/WebGL:** [zalo/Shipwright](https://github.com/zalo/Shipwright).
+- **Base clean-room:** [andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom).
+- **Dados de mensagens PT-BR:** integração baseada no conjunto de mensagens atribuído a Geraldo Cruzeiro presente no projeto.
+
+Respeite as licenças e os créditos dos projetos e componentes de origem. **The Legend of Zelda** e seus personagens são propriedade de seus respectivos titulares. Este é um projeto independente de fãs, sem afiliação ou endosso da Nintendo.
+
+---
+
+## Status
+
+- [x] Compilação web concluída no GitHub Actions.
+- [x] Publicação automática no GitHub Pages.
+- [x] Jogo acessível pelo navegador.
+- [x] Integração de diálogos PT-BR incluída na build publicada.
+- [ ] Acentuação completa na fonte do jogo.
+- [ ] Testes mais amplos em diferentes navegadores, dispositivos e controles.
+
+**Acesse:** https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/
