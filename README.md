@@ -101,6 +101,7 @@ As imagens abaixo mostram capturas do projeto em execução no navegador.
   <tr>
     <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/80bc35bb-4c27-4df7-b9d0-a4c1a3ff66ec.jpg" alt="Captura de tela 3" width="420"></td>
     <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/dfae4ce1-2dd3-435e-9c20-8f7c9de5c1c0.jpg" alt="Captura de tela 4" width="420"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/fe94e80b-a64f-4d57-b9ad-192bb800ed26.png" alt="Captura de tela 5" width="420"></td>
   </tr>
 </table>
 
