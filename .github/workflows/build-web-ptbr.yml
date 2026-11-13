@@ -22,6 +22,12 @@ jobs:
           path: sohweb
           submodules: recursive
 
+      - name: Record engine revision and normalize source timestamps
+        run: |
+          echo "SOHWEB_SHA=$(git -C sohweb rev-parse HEAD)" >> "$GITHUB_ENV"
+          find sohweb -type f -not -path '*/.git/*' \
+            -exec touch -d '2000-01-01 00:00:00 UTC' {} +
+
       - name: Install system and Python dependencies
         run: |
           sudo apt-get update
@@ -77,9 +83,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: build-web
-          key: web-${{ runner.os }}-emsdk-6.0.10-${{ github.sha }}
-          restore-keys: |
-            web-${{ runner.os }}-emsdk-6.0.10-
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-${{ hashFiles('ports/soh/ptbr/**', 'ports/soh/port_patches.py', '.github/workflows/build-web-ptbr.yml') }}
 
       - name: Configure Emscripten build
         run: |
@@ -97,7 +101,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: build-web
-          key: web-${{ runner.os }}-emsdk-6.0.10-${{ github.sha }}
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-${{ hashFiles('ports/soh/ptbr/**', 'ports/soh/port_patches.py', '.github/workflows/build-web-ptbr.yml') }}
 
       - name: Assemble browser site
         run: |
