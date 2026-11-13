@@ -1,0 +1,79 @@
+name: Build PT-BR web game
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-web:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout PT-BR project
+        uses: actions/checkout@v4
+
+      - name: Checkout Emscripten web engine
+        uses: actions/checkout@v4
+        with:
+          repository: zalo/Shipwright
+          ref: feature/emscripten-web-port
+          path: sohweb
+          submodules: recursive
+
+      - name: Install system and Python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git python3 python3-pip cmake ninja-build \
+            libglew-dev libsdl2-dev libz-dev zip pkg-config
+          python3 -m pip install --break-system-packages numpy
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 6.0.10
+          actions-cache-folder: emsdk-cache
+
+      - name: Check public clean-room resource archives
+        run: |
+          mkdir -p resource-input
+          curl --fail --location --retry 3 \
+            https://andrewnakas.github.io/oot-cleanroom/soh.o2r \
+            --output resource-input/soh.o2r
+          curl --fail --location --retry 3 \
+            https://andrewnakas.github.io/oot-cleanroom/oot.o2r \
+            --output resource-input/oot.o2r
+          test -s resource-input/soh.o2r
+          test -s resource-input/oot.o2r
+          ls -lh resource-input/*.o2r
+
+      - name: Install PT-BR sources and apply web patches
+        run: python3 -m ports.soh.port_patches "$GITHUB_WORKSPACE/sohweb"
+
+      - name: Configure Emscripten build
+        run: |
+          emcmake cmake -B build-web -S sohweb -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DUSE_OPENGLES=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            "-DCMAKE_CXX_FLAGS=-DFMT_CONSTEVAL="
+
+      - name: Compile Ship of Harkinian
+        run: emmake cmake --build build-web --target soh --parallel 2
+
+      - name: Assemble browser site
+        run: |
+          python3 -m ports.soh.clean_soh \
+            resource-input/soh.o2r build-web/soh/soh.o2r
+          python3 ports/soh/make_site.py \
+            build-web/soh build-web/soh/soh.o2r \
+            resource-input/oot.o2r site
+
+      - name: Upload playable web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocarina-ptbr-web
+          path: site/
+          if-no-files-found: error
+          retention-days: 7
