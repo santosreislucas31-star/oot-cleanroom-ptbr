@@ -16,9 +16,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def main(argv):
     build, soh_o2r, oot_o2r, site = argv[1:5]
     os.makedirs(site, exist_ok=True)
-    for f in ("soh.js", "soh.wasm", "soh.data"):
-        if os.path.exists(os.path.join(build, f)):
-            shutil.copyfile(os.path.join(build, f), os.path.join(site, f))
+    required = ("soh.html", "soh.js", "soh.wasm")
+    missing = [f for f in required if not os.path.isfile(os.path.join(build, f))]
+    if missing:
+        raise FileNotFoundError("Missing required Emscripten output(s): " + ", ".join(missing))
+    for f in required + ("soh.data",):
+        source = os.path.join(build, f)
+        if os.path.isfile(source):
+            shutil.copyfile(source, os.path.join(site, f))
     shutil.copyfile(soh_o2r, os.path.join(site, "soh.o2r"))
     shutil.copyfile(oot_o2r, os.path.join(site, "oot.o2r"))
     html = open(os.path.join(build, "soh.html"), encoding="utf-8").read()
