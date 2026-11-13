@@ -84,6 +84,8 @@ jobs:
         with:
           path: build-web
           key: web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-${{ hashFiles('ports/soh/ptbr/**', 'ports/soh/port_patches.py', '.github/workflows/build-web-ptbr.yml') }}
+          restore-keys: |
+            web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-
 
       - name: Configure Emscripten build
         run: |
