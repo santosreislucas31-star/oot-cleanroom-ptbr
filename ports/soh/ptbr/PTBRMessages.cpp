@@ -316,8 +316,15 @@ bool AppendTag(std::string& raw, std::string_view tag) {
 }
 
 bool DecodeUtf8(std::string_view input, size_t& position, uint32_t& codePoint) {
+    if (position >= input.size()) {
+        return false;
+    }
+
     const auto byteAt = [&](size_t offset) -> uint8_t {
         return static_cast<uint8_t>(input[position + offset]);
+    };
+    const auto isContinuation = [](uint8_t value) {
+        return (value & 0xC0) == 0x80;
     };
 
     const uint8_t first = byteAt(0);
@@ -328,17 +335,50 @@ bool DecodeUtf8(std::string_view input, size_t& position, uint32_t& codePoint) {
         return true;
     }
 
-    if ((first & 0xE0) == 0xC0 && position + 1 < input.size()) {
+    if ((first & 0xE0) == 0xC0) {
+        if (position + 1 >= input.size() || !isContinuation(byteAt(1))) {
+            return false;
+        }
         codePoint = ((first & 0x1F) << 6) | (byteAt(1) & 0x3F);
+        if (codePoint < 0x80) { // Reject overlong encodings.
+            return false;
+        }
         position += 2;
         return true;
     }
 
-    if ((first & 0xF0) == 0xE0 && position + 2 < input.size()) {
+    if ((first & 0xF0) == 0xE0) {
+        if (position + 2 >= input.size() ||
+            !isContinuation(byteAt(1)) ||
+            !isContinuation(byteAt(2))) {
+            return false;
+        }
         codePoint = ((first & 0x0F) << 12) |
                     ((byteAt(1) & 0x3F) << 6) |
                     (byteAt(2) & 0x3F);
+        if (codePoint < 0x800 ||
+            (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
+            return false; // Reject overlong encodings and UTF-16 surrogates.
+        }
         position += 3;
+        return true;
+    }
+
+    if ((first & 0xF8) == 0xF0) {
+        if (position + 3 >= input.size() ||
+            !isContinuation(byteAt(1)) ||
+            !isContinuation(byteAt(2)) ||
+            !isContinuation(byteAt(3))) {
+            return false;
+        }
+        codePoint = ((first & 0x07) << 18) |
+                    ((byteAt(1) & 0x3F) << 12) |
+                    ((byteAt(2) & 0x3F) << 6) |
+                    (byteAt(3) & 0x3F);
+        if (codePoint < 0x10000 || codePoint > 0x10FFFF) {
+            return false; // Reject overlong and out-of-range code points.
+        }
+        position += 4;
         return true;
     }
 
