@@ -47,10 +47,22 @@ jobs:
           test -s resource-input/oot.o2r
           ls -lh resource-input/*.o2r
 
-      - name: Validate PT-BR data and Python dependencies
+      - name: Validate PT-BR data, Python dependencies and archives
         run: |
           python3 -c "import numpy; import PIL; from games.oot import o2r, drawn, extract_spec; from cleanroom.gfx import texfmt"
+          python3 -m compileall -q ports/soh games/oot cleanroom
           python3 -m ports.soh.validate_ptbr
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          for path in ("resource-input/soh.o2r", "resource-input/oot.o2r"):
+              with ZipFile(path) as archive:
+                  if not archive.namelist():
+                      raise SystemExit(f"Archive is empty: {path}")
+                  bad = archive.testzip()
+                  if bad:
+                      raise SystemExit(f"Corrupt entry in {path}: {bad}")
+              print(f"Archive OK: {path}")
+          PY
 
       - name: Install PT-BR sources and apply web patches
         run: python3 -m ports.soh.port_patches "$GITHUB_WORKSPACE/sohweb"
