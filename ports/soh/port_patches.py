@@ -103,7 +103,7 @@ def main(argv):
         s = s.replace(old, new, 1)
         open(p, "w", encoding="utf-8", newline=NL).write(s)
         done += 1
-    print(f"patches applied: {done}")
+    print(f"PT-BR files installed: {copied}; patches applied: {done}")
 
 
 if __name__ == "__main__":
