@@ -127,8 +127,10 @@ def main(argv):
         if (new and new in s) or (not new and old not in s):
             continue                            # already applied
         if old not in s:
-            print("MISSING", rel, old[:60].replace(NL, " "))
-            continue
+            raise RuntimeError(
+                "Required web patch anchor not found in " + rel + ": " +
+                old[:100].replace(NL, " ")
+            )
         s = s.replace(old, new, 1)
         open(p, "w", encoding="utf-8", newline=NL).write(s)
         done += 1
