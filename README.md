@@ -88,3 +88,19 @@ Respeite as licenças e os créditos dos projetos e componentes de origem. **The
 - [ ] Testes mais amplos em diferentes navegadores, dispositivos e controles.
 
 **Acesse:** https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/
+
+## Capturas de tela
+
+As imagens abaixo mostram capturas do projeto em execução no navegador.
+
+<table>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/089925f8-31e8-4749-b95e-bc8f18425605.jpg" alt="Captura de tela 1" width="420"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/38cbabfb-7466-478c-9099-a28609ab1e47.jpg" alt="Captura de tela 2" width="420"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/80bc35bb-4c27-4df7-b9d0-a4c1a3ff66ec.jpg" alt="Captura de tela 3" width="420"></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/dfae4ce1-2dd3-435e-9c20-8f7c9de5c1c0.jpg" alt="Captura de tela 4" width="420"></td>
+  </tr>
+</table>
+
