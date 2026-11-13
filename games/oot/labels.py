@@ -162,6 +162,22 @@ _PT_PHRASES = {
     "desert colossus": "Colosso do Deserto",
     "lon lon ranch": "Fazenda Lon Lon",
     "royal familys tomb": "Túmulo da Família Real",
+    "ganons castle": "Castelo de Ganon",
+    "inside ganons castle": "Dentro do Castelo de Ganon",
+    "gerudos fortress": "Fortaleza Gerudo",
+    "zoras domain": "Domínio dos Zoras",
+    "zoras fountain": "Fonte dos Zoras",
+    "zoras river": "Rio dos Zoras",
+    "deku tree": "Árvore Deku",
+    "inside deku tree": "Dentro da Árvore Deku",
+    "great fairys fountain": "Fonte da Grande Fada",
+    "chamber of the sages": "Câmara dos Sábios",
+    "house of skulltula": "Casa das Skulltulas",
+    "gravekeepers hut": "Cabana do Coveiro",
+    "treasure box shop": "Loja dos Baús de Tesouro",
+    "happy mask shop": "Loja de Máscaras Felizes",
+    "thieves hideout": "Esconderijo dos Ladrões",
+    "lakeside laboratory": "Laboratório à Beira do Lago",
 }
 
 _PT_WORDS = {
