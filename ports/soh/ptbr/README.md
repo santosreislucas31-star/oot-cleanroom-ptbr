@@ -6,4 +6,4 @@ The bundle contains four sorted message-ID chunks (2,163 entries total), the mes
 
 `ports/soh/port_patches.py` copies the message sources to `soh/soh/Enhancements/PTBR` before the SoH build. The Emscripten fork's recursive CMake source glob picks up the added `.cpp` files.
 
-The static validator checks message IDs, complete entry structure, textbox metadata, every control-token parameter, and every non-ASCII character against the runtime converter. This is source validation only; a successful Emscripten compile and in-browser dialogue/gameplay verification are still required before calling the translation playable.
+The static validator checks message IDs and cross-message links, complete entry structure, textbox metadata, token parameters, the raw font-byte allowlist, supported Unicode characters, and the runtime font/decoded-message buffer limits. This is source validation only; a successful Emscripten compile and in-browser dialogue/gameplay verification are still required before calling the translation playable.
