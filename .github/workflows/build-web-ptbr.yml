@@ -47,8 +47,27 @@ jobs:
           test -s resource-input/oot.o2r
           ls -lh resource-input/*.o2r
 
+      - name: Validate PT-BR data and Python dependencies
+        run: |
+          python3 -c "import numpy; import PIL; from games.oot import o2r, drawn, extract_spec; from cleanroom.gfx import texfmt"
+          python3 -m ports.soh.validate_ptbr
+
       - name: Install PT-BR sources and apply web patches
         run: python3 -m ports.soh.port_patches "$GITHUB_WORKSPACE/sohweb"
+
+      - name: Prepare clean SoH resource archive
+        run: |
+          python3 -m ports.soh.clean_soh \
+            resource-input/soh.o2r resource-input/soh-clean.o2r
+          test -s resource-input/soh-clean.o2r
+
+      - name: Restore incremental Emscripten build
+        uses: actions/cache@v5
+        with:
+          path: build-web
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ github.sha }}
+          restore-keys: |
+            web-${{ runner.os }}-emsdk-6.0.10-
 
       - name: Configure Emscripten build
         run: |
@@ -63,8 +82,8 @@ jobs:
 
       - name: Assemble browser site
         run: |
-          python3 -m ports.soh.clean_soh \
-            resource-input/soh.o2r build-web/soh/soh.o2r
+          mkdir -p build-web/soh
+          cp resource-input/soh-clean.o2r build-web/soh/soh.o2r
           python3 ports/soh/make_site.py \
             build-web/soh build-web/soh/soh.o2r \
             resource-input/oot.o2r site
