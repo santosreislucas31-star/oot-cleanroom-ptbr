@@ -115,8 +115,7 @@ PTBR_DEST = os.path.join("soh", "soh", "Enhancements", "PTBR")
 PTBR_FILES = (
     "PTBRData.cpp", "PTBRData_0000_0FFF.cpp", "PTBRData_1000_1FFF.cpp",
     "PTBRData_2000_3FFF.cpp", "PTBRData_4000_FFFF.cpp", "PTBRMessages.cpp",
-    "PTBRData.h", "PTBRDataChunks.h", "PTBRMessages.h", "PTBRFont.h",
-    "PTBRFontGlyphs.h",
+    "PTBRData.h", "PTBRDataChunks.h", "PTBRMessages.h",
 )
 
 
