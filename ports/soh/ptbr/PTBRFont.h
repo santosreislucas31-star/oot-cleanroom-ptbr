@@ -15,7 +15,8 @@ extern PlayState* gPlayState;
 }
 
 inline void PTBR_EnsureFont() {
-    static bool warned = false;
+    static bool reported[PTBRFont::patches.size()] = {};
+    size_t patchIndex = 0;
     for (const auto& patch : PTBRFont::patches) {
         auto source = std::dynamic_pointer_cast<Fast::Texture>(
             ResourceMgr_GetResourceByNameHandlingMQ(fontTbl[patch.source - 0x20]));
@@ -27,11 +28,14 @@ inline void PTBR_EnsureFont() {
                    texture->ImageData && texture->ImageDataSize == 128 && texture->Flags == 0;
         };
         if (!compatible(source) || !compatible(target)) {
-            if (!warned) {
-                std::cerr << "[PTBR] Font replacement requires the original 16x16 I4 font."
-                          << std::endl;
-                warned = true;
+            if (!reported[patchIndex]) {
+                std::cerr << "[PTBR] Glyph patch unavailable: target=0x" << std::hex
+                          << static_cast<int>(patch.target) << " source=0x"
+                          << static_cast<int>(patch.source) << std::dec
+                          << " (font texture missing or incompatible)." << std::endl;
+                reported[patchIndex] = true;
             }
+            ++patchIndex;
             continue;
         }
         PTBRFont::Glyph original;
@@ -43,5 +47,12 @@ inline void PTBR_EnsureFont() {
                                  reinterpret_cast<uintptr_t>(target->ImageData));
         }
         sFontWidths[patch.target - 0x20] = sFontWidths[patch.source - 0x20];
+        if (!reported[patchIndex]) {
+            std::cerr << "[PTBR] Glyph patch ready: target=0x" << std::hex
+                      << static_cast<int>(patch.target) << " source=0x"
+                      << static_cast<int>(patch.source) << std::dec << std::endl;
+            reported[patchIndex] = true;
+        }
+        ++patchIndex;
     }
 }
