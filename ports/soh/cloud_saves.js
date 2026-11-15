@@ -92,7 +92,8 @@ async function listLatestBackup(userId) {
 }
 
 async function restoreBackup(backup) {
-  const fs = getFS();\n  if (!fs || typeof fs.writeFile !== "function") throw new Error("Sistema de arquivos do jogo indisponível");
+  const fs = getFS();
+  if (!fs || typeof fs.writeFile !== "function") throw new Error("Sistema de arquivos do jogo indisponível");
   const listed = Array.isArray(backup.manifest.files)
     ? backup.manifest.files.map(meta => [meta.name, meta])
     : Object.entries(backup.manifest.files);
@@ -140,8 +141,9 @@ async function restoreBackup(backup) {
 }
 
 async function readLocalSaves() {
-  if (!window.FS || typeof FS.readdir !== "function") return [];
-  const names = FS.readdir(SAVE_DIR).filter(name => SAVE_NAME.test(name) || name === "global.sav");
+  const fs = getFS();
+  if (!fs || typeof fs.readdir !== "function") return [];
+  const names = fs.readdir(SAVE_DIR).filter(name => SAVE_NAME.test(name) || name === "global.sav");
   const files = [];
   for (const name of names) {
     const bytes = new Uint8Array(fs.readFile(SAVE_DIR + "/" + name));
@@ -208,7 +210,8 @@ function scheduleCloudBackup() {
 
 function persistIdbfs() {
   return new Promise((resolve, reject) => {
-    const fs = getFS();\n    if (!fs || typeof fs.syncfs !== "function") {
+    const fs = getFS();
+    if (!fs || typeof fs.syncfs !== "function") {
       reject(new Error("IDBFS indisponível"));
       return;
     }
