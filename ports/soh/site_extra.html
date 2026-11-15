@@ -3,6 +3,12 @@ Keyboard: WASD stick &middot; X = A &middot; C = B &middot; Z = Z &middot; Space
 Clean-room build: all textures, fonts, samples and backgrounds regenerated from coarse facts. No ROM needed.
 <a href="https://github.com/andrewnakas/oot-cleanroom" style="color:#8af;pointer-events:auto">Source &amp; details</a>
 </div>
+<div id="cr-auth" style="position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #46515f;border-radius:8px;background:rgba(12,17,24,.92);color:#e8edf3;font:12px/1.4 -apple-system,Segoe UI,sans-serif">
+  <span data-auth-status>Verificando conta...</span>
+  <button data-auth-login type="button" hidden style="cursor:pointer;padding:6px 10px;border:0;border-radius:5px;background:#238636;color:white">Entrar com GitHub</button>
+  <button data-auth-logout type="button" hidden style="cursor:pointer;padding:6px 10px;border:1px solid #697586;border-radius:5px;background:#26313d;color:white">Sair</button>
+</div>
+<script type="module" src="./cloud_auth.js"></script>
 <script>
 (function(){var t=setInterval(function(){var o=document.getElementById('overlay');if(o&&o.classList.contains('hidden')){var e=document.getElementById('cr-info');if(e)e.style.display='none';clearInterval(t);}},500);})();
 </script>
