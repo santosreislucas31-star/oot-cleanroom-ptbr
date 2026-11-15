@@ -26,6 +26,10 @@ def main(argv):
             shutil.copyfile(source, os.path.join(site, f))
     shutil.copyfile(soh_o2r, os.path.join(site, "soh.o2r"))
     shutil.copyfile(oot_o2r, os.path.join(site, "oot.o2r"))
+    # Keep the optional browser auth module beside index.html.
+    auth_js = os.path.join(HERE, "cloud_auth.js")
+    if os.path.isfile(auth_js):
+        shutil.copyfile(auth_js, os.path.join(site, "cloud_auth.js"))
     html = open(os.path.join(build, "soh.html"), encoding="utf-8").read()
     ver = str(int(os.path.getmtime(os.path.join(site, "oot.o2r"))))
     # default boot: the authentic N64-logo -> title sequence (SoH's own ship logo stalls on some hosts)
