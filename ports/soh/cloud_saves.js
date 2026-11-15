@@ -135,6 +135,7 @@ async function restoreBackup(backup) {
         else fs.unlink(item.path);
       } catch (_) {}
     }
+    try { await persistIdbfs(); } catch (_) {}
     throw error;
   }
   lastFingerprint = "";
@@ -171,7 +172,7 @@ async function createCloudBackup() {
 
   for (const file of files) {
     const path = base + "/" + file.name;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, file.bytes, {
+    const { error } = await supabase.storage.from(BUCKET).upload(path, new Blob([file.bytes], { type: "application/octet-stream" }), {
       contentType: "application/octet-stream",
       upsert: false
     });
