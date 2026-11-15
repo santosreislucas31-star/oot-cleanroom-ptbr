@@ -16,8 +16,9 @@ struct Patch {
 };
 
 // Only unused European accented slots are reassigned. Buttons start at 0x9F.
-inline constexpr std::array<Patch, 11> patches = {{
+inline constexpr std::array<Patch, 12> patches = {{
     {0x81, 0x82, 5, 0, false}, {0x83, 0x82, 3, 0, true},
+    {0x91, 0x92, 5, 2, false},
     {0x89, 0x89, 1, 0, false}, {0x8B, 0x8B, 5, 0, false},
     {0x8C, 0x8B, 3, 0, true}, {0x8D, 0x8D, 3, 0, false},
     {0x93, 0x93, 1, 2, true},  {0x99, 0x99, 1, 2, false},
