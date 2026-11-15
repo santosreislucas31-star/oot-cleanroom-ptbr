@@ -82,6 +82,25 @@ void web_apply_anchor_config() {
     ("soh/CMakeLists.txt",
      "                --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/assets/xml@assets/xml\n"
      "                --preload-file=${CMAKE_CURRENT_SOURCE_DIR}/assets/extractor@assets\n", ""),
+    # 3. Cloud saves: wait for local IDBFS + optional cloud restore before game startup.
+    ("soh/src/code/main.c",
+     "    if (!web_is_idbfs_ready()) {\n        // IDBFS not yet loaded from IndexedDB - keep polling\n        return;\n    }",
+     "    if (web_is_idbfs_ready() <= 0) {\n        // Local IndexedDB load is pending or failed; never start against uncertain save data.\n        return;\n    }\n    if (!web_cloud_startup_ready()) {\n        // Cloud restore choice/check is still pending.\n        return;\n    }"),
+    ("soh/soh/web/web_main.h",
+     "int web_is_idbfs_ready(void);",
+     "int web_is_idbfs_ready(void);\nint web_cloud_startup_ready(void);"),
+    ("soh/soh/web/web_main.cpp",
+     "        // Signal C side that IDBFS is ready\n        setValue(_web_idbfs_ready_ptr(), 1, 'i32');",
+     "        // 1 = loaded successfully; -1 = failed. Never treat a failed load as ready.\n        if (err) { console.error(\"[Web] IDBFS load failed:\", err); try { var n = document.getElementById(\"cr-idbfs-error\") || document.createElement(\"div\"); n.id = \"cr-idbfs-error\"; n.textContent = \"Falha ao carregar os saves locais. Atualize a página antes de tentar novamente.\"; n.style.cssText = \"position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:3000;padding:12px;background:#7f1d1d;color:white;border-radius:8px;font:14px sans-serif\"; document.body.appendChild(n); } catch(e) {} }\n        setValue(_web_idbfs_ready_ptr(), err ? -1 : 1, 'i32');"),
+    ("soh/soh/web/web_main.cpp",
+     "        \"if (typeof FS !== 'undefined' && FS.syncfs) {\"\n        \"  FS.syncfs(false, function(err) {\"\n        \"    if (err) console.error('[Web] FS.syncfs save failed:', err);\"\n        \"    else console.log('[Web] FS.syncfs save complete.');\"\n        \"  });\"\n        \"}\"",
+     "        \"if (window.ootPersistIdbfs) window.ootPersistIdbfs();\"\n        \"else if (typeof FS !== 'undefined' && FS.syncfs) FS.syncfs(false, function(err) {\"\n        \"  if (err) console.error('[Web] FS.syncfs save failed:', err);\"\n        \"});\""),
+    ("soh/soh/web/web_main.cpp",
+     "int web_is_idbfs_ready(void) {\n    return s_idbfs_ready;\n}",
+     "int web_is_idbfs_ready(void) {\n    return s_idbfs_ready;\n}\n\nEM_JS(int, web_cloud_startup_ready, (), {\n    if (!window.ootCloudSaves || typeof window.ootCloudSaves.startupStatus !== 'function') return 0;\n    return window.ootCloudSaves.startupStatus();\n});"),
+    ("soh/soh/SaveManager.cpp",
+     "    output << std::setw(1) << globalBlock << std::endl;",
+     "    output << std::setw(1) << globalBlock << std::endl;\n    output.close();\n#ifdef __EMSCRIPTEN__\n    web_save_to_idb();\n#endif")
 ]
 
 
