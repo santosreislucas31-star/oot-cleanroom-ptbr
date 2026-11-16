@@ -65,7 +65,12 @@ class GeneratedHtmlPatchTests(unittest.TestCase):
         self.assertIn("window._rtReady = true;", result)
         self.assertIn("romInput.disabled = false;", result)
         self.assertIn("Aguarde o carregamento antes de selecionar a ROM.", result)
-        self.assertIn("disabled", result[result.find("id=otr-file"):result.find(">", result.find("id=otr-file"))])
+        picker_start = result.find("id=otr-file")
+        if picker_start < 0:
+            picker_start = result.find('id="otr-file"')
+        picker_end = result.find(">", picker_start)
+        self.assertGreaterEqual(picker_start, 0)
+        self.assertIn("disabled", result[picker_start:picker_end])
         self.assertIn("Module && window._rtReady && Module._web_wants_text_input", result)
         return result
 
