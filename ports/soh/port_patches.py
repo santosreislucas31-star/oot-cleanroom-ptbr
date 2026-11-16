@@ -81,7 +81,9 @@ void web_apply_anchor_config() {
     # Keep assets/xml and assets/extractor preloaded: web_extract_rom uses ZAPD
     # in WebAssembly to build the player's own oot.o2r locally in the browser.
     ("soh/soh/web/shell.html",
-     "      var romData = new Uint8Array(romArrayBuffer);\\n      try {\\n        FS.writeFile('/rom.z64', romData);",
+     "      var romData = new Uint8Array(romArrayBuffer);
+      try {
+        FS.writeFile('/rom.z64', romData);",
      """      var romData = new Uint8Array(romArrayBuffer);
       // ZAPD expects big-endian .z64 bytes, regardless of the uploaded extension.
       if (romData[0] === 0x37) {
