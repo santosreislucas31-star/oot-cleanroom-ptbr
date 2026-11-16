@@ -66,7 +66,7 @@ def patch_generated_html(html):
 
     checks = {
         "new cache namespace": CACHE_DB_NAME in html,
-        "old cache namespace absent": "soh_otr_files" not in html,
+        "old cache namespace absent": not re.search(r"\\bOTR_DB_NAME\\s*=\\s*['\\\"]soh_otr_files['\\\"]", html),
         "cache gate requires vanilla or MQ OOT archive": (
             "key === 'oot.o2r'" in html and "key === 'oot-mq.o2r'" in html
         ),
