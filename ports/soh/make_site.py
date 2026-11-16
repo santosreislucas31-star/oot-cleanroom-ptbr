@@ -159,7 +159,8 @@ def main(argv):
             raise FileNotFoundError("Required browser module is missing: " + source)
         shutil.copyfile(source, os.path.join(site, module))
 
-    html = open(os.path.join(build, "soh.html"), encoding="utf-8").read()
+    with open(os.path.join(build, "soh.html"), encoding="utf-8") as source_html:
+        html = source_html.read()
     boot = (
         "<script>window._devCvars='gSettings.BootSequence:1';try{var _dv=new URLSearchParams(location.search).get('dev');"
         "if(_dv)window._devCvars=_dv;}catch(e){}</script>"
@@ -199,7 +200,8 @@ def main(argv):
         raise FileNotFoundError("Required site UI is missing: " + extra)
     if "</body>" not in html:
         raise RuntimeError("Generated HTML has no </body> element")
-    html = html.replace("</body>", open(extra, encoding="utf-8").read() + "</body>", 1)
+    with open(extra, encoding="utf-8") as extra_html:
+        html = html.replace("</body>", extra_html.read() + "</body>", 1)
     html = patch_generated_html(html)
 
     output_html = os.path.join(site, "index.html")
@@ -222,7 +224,8 @@ def main(argv):
         if os.path.getsize(path) == 0:
             raise RuntimeError("Generated site file is empty: " + name)
 
-    runtime_js = open(os.path.join(site, "soh.js"), encoding="utf-8").read()
+    with open(os.path.join(site, "soh.js"), encoding="utf-8") as runtime_file:
+        runtime_js = runtime_file.read()
     if "soh.wasm" not in runtime_js or "soh.data" not in runtime_js:
         raise RuntimeError("Emscripten loader does not reference both soh.wasm and soh.data")
     if not any(marker in html for marker in ("src=soh.js", 'src="soh.js"', "src='soh.js'")):
