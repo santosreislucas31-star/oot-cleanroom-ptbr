@@ -16,11 +16,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 def main(argv):
     build, soh_o2r, site = argv[1:4]
     os.makedirs(site, exist_ok=True)
-    required = ("soh.html", "soh.js", "soh.wasm")
+    required = ("soh.html", "soh.js", "soh.wasm", "soh.data")
     missing = [f for f in required if not os.path.isfile(os.path.join(build, f))]
     if missing:
         raise FileNotFoundError("Missing required Emscripten output(s): " + ", ".join(missing))
-    for f in required + ("soh.data",):
+    for f in required:
         source = os.path.join(build, f)
         if os.path.isfile(source):
             shutil.copyfile(source, os.path.join(site, f))
