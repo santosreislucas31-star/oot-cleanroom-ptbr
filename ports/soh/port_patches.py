@@ -78,25 +78,6 @@ void web_apply_anchor_config() {
     ("soh/CMakeLists.txt",
      "_web_wants_text_input,_malloc,_free",
      "_web_wants_text_input,_web_scene,_web_player_pos,_web_console,_web_select_warp,_malloc,_free"),
-    # Keep assets/xml and assets/extractor preloaded: web_extract_rom uses ZAPD
-    # in WebAssembly to build the player's own oot.o2r locally in the browser.
-    ("soh/soh/web/shell.html",
-     "      var romData = new Uint8Array(romArrayBuffer);\n      try {\n        FS.writeFile('/rom.z64', romData);",
-     """      var romData = new Uint8Array(romArrayBuffer);
-      // ZAPD expects big-endian .z64 bytes, regardless of the uploaded extension.
-      if (romData[0] === 0x37) {
-        for (var i = 0; i + 1 < romData.length; i += 2) {
-          var b = romData[i]; romData[i] = romData[i + 1]; romData[i + 1] = b;
-        }
-      } else if (romData[0] === 0x40) {
-        for (var i = 0; i + 3 < romData.length; i += 4) {
-          var b0 = romData[i], b1 = romData[i + 1];
-          romData[i] = romData[i + 3]; romData[i + 1] = romData[i + 2];
-          romData[i + 2] = b1; romData[i + 3] = b0;
-        }
-      }
-      try {
-        FS.writeFile('/rom.z64', romData);"""),
     # 3. Cloud saves: wait for local IDBFS + optional cloud restore before game startup.
     ("soh/src/code/main.c",
      "    if (!web_is_idbfs_ready()) {\n        // IDBFS not yet loaded from IndexedDB - keep polling\n        return;\n    }",
