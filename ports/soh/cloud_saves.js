@@ -31,13 +31,13 @@ function showRestoreChoice(backup) {
     panel = document.createElement("div");
     panel.id = "cr-cloud-choice";
     panel.style.cssText = "position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);font:15px/1.5 -apple-system,Segoe UI,sans-serif;color:#edf2f7";
-    panel.innerHTML = '<div style="width:min(440px,calc(100% - 32px));padding:24px;border:1px solid #526071;border-radius:12px;background:#111923;box-shadow:0 16px 60px #000"><h2 style="margin:0 0 10px;font-size:20px">Backup encontrado</h2><p data-cloud-message style="margin:0 0 18px;color:#c4ced9">Existe um save na nuvem. Como deseja iniciar?</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button data-cloud-restore style="padding:10px 14px;border:0;border-radius:6px;background:#238636;color:white;cursor:pointer">Restaurar da nuvem</button><button data-cloud-local style="padding:10px 14px;border:1px solid #64748b;border-radius:6px;background:#26313d;color:white;cursor:pointer">Continuar com save local</button></div></div>';
+    panel.innerHTML = '<div style="width:min(440px,calc(100% - 32px));padding:24px;border:1px solid #526071;border-radius:12px;background:#111923;box-shadow:0 16px 60px #000"><h2 style="margin:0 0 10px;font-size:20px">Backup encontrado</h2><p data-cloud-message style="margin:0 0 18px;color:#c4ced9">Existe um save na nuvem. Como deseja iniciar?</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button data-cloud-restore style="padding:10px 14px;border:0;border-radius:6px;background:#238636;color:white;cursor:pointer">Restaurar da nuvem</button><button data-cloud-local style="padding:10px 14px;border:1px solid #64748b;border-radius:6px;background:#26313d;color:white;cursor:pointer">Usar save local nesta conta</button></div></div>';
     document.body.appendChild(panel);
   }
   const message = panel.querySelector("[data-cloud-message]");
   const restore = panel.querySelector("[data-cloud-restore]");
   const local = panel.querySelector("[data-cloud-local]");
-  message.textContent = "Backup de " + new Date(backup.createdAt || Date.now()).toLocaleString() + ". Escolha qual progresso deseja usar.";
+  message.textContent = "Backup de " + new Date(backup.createdAt || Date.now()).toLocaleString() + ". O save local deste navegador pode ser de outra conta; restaure da nuvem para evitar misturar progressos.";
   restore.disabled = false;
   local.disabled = false;
   restore.onclick = async () => {
@@ -61,6 +61,36 @@ function showRestoreChoice(backup) {
     panel.remove();
     startupState = 1;
     setStatus("Usando save local");
+  };
+}
+
+function showNoBackupChoice(expectedUserId) {
+  let panel = document.getElementById("cr-cloud-choice");
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.id = "cr-cloud-choice";
+    panel.style.cssText = "position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);font:15px/1.5 -apple-system,Segoe UI,sans-serif;color:#edf2f7";
+    panel.innerHTML = '<div style="width:min(440px,calc(100% - 32px));padding:24px;border:1px solid #526071;border-radius:12px;background:#111923;box-shadow:0 16px 60px #000"><h2 style="margin:0 0 10px;font-size:20px">Save local encontrado</h2><p data-cloud-message style="margin:0 0 18px;color:#c4ced9"></p><div style="display:flex;gap:10px;flex-wrap:wrap"><button data-cloud-link style="padding:10px 14px;border:0;border-radius:6px;background:#238636;color:white;cursor:pointer">Vincular save local à conta</button><button data-cloud-local-only style="padding:10px 14px;border:1px solid #64748b;border-radius:6px;background:#26313d;color:white;cursor:pointer">Continuar só localmente</button></div></div>';
+    document.body.appendChild(panel);
+  }
+  const message = panel.querySelector("[data-cloud-message]");
+  const link = panel.querySelector("[data-cloud-link]");
+  const localOnly = panel.querySelector("[data-cloud-local-only]");
+  message.textContent = "Esta conta ainda não tem backup, mas existe progresso salvo neste navegador. Como o save local pode pertencer a outra conta, escolha explicitamente se deseja vinculá-lo.";
+  link.disabled = false;
+  localOnly.disabled = false;
+  link.onclick = () => {
+    if (!currentUser || currentUser.id !== expectedUserId) return;
+    panel.remove();
+    startupState = 1;
+    setStatus("Save local vinculado a esta conta");
+  };
+  localOnly.onclick = () => {
+    if (!currentUser || currentUser.id !== expectedUserId) return;
+    currentUser = null;
+    panel.remove();
+    startupState = 1;
+    setStatus("Save local mantido — nuvem desativada nesta sessão");
   };
 }
 
@@ -178,6 +208,16 @@ async function restoreBackup(backup, expectedUserId) {
     throw error;
   }
   lastFingerprint = "";
+}
+
+function hasLocalSaveFiles() {
+  const fs = getFS();
+  if (!fs || typeof fs.readdir !== "function") return false;
+  try {
+    return fs.readdir(SAVE_DIR).some(name => SAVE_NAME.test(name));
+  } catch (_) {
+    return false;
+  }
 }
 
 async function readLocalSaves() {
@@ -317,6 +357,7 @@ async function initializeForUser(sessionUser) {
     const backup = await listLatestBackup(verified.user.id);
     if (generation !== authGeneration || !currentUser || currentUser.id !== sessionUser.id) return;
     if (backup) showRestoreChoice(backup);
+    else if (hasLocalSaveFiles()) showNoBackupChoice(sessionUser.id);
     else {
       startupState = 1;
       setStatus("Conectado — nenhum backup anterior");
