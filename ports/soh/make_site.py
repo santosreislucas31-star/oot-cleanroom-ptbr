@@ -60,7 +60,7 @@ def patch_generated_html(html):
     # Prevent UI handlers from calling a WebAssembly export before runtime init.
     html = replace_required(
         r"(\bonRuntimeInitialized\s*:\s*function\s*\(\s*\)\s*\{)",
-        r"\1window._rtReady = true;",
+        r"\1window._rtReady = true; var romInput = document.getElementById('otr-file'); if (romInput) romInput.disabled = false;",
         html,
         "WebAssembly runtime-ready flag",
     )
@@ -70,7 +70,20 @@ def patch_generated_html(html):
         html,
         "text-input handler runtime guard",
     )
+    html = replace_required(
+        r"(<input\b[^>]*\bid\s*=\s*['\"]?otr-file['\"]?[^>]*)(>)",
+        r"\1 disabled\2",
+        html,
+        "disable ROM picker until runtime is ready",
+    )
+    html = replace_required(
+        r"(function\s+handleOtrFiles\s*\(\s*[A-Za-z_$][A-Za-z0-9_$]*\s*\)\s*\{)",
+        r"\1if (!window._rtReady) { setStatus('Aguarde o carregamento antes de selecionar a ROM.'); return; }",
+        html,
+        "drag-and-drop waits for runtime",
+    )
 
+    checks = {
     checks = {
         "new cache namespace": CACHE_DB_NAME in html,
         "old cache namespace absent": all(
@@ -85,6 +98,11 @@ def patch_generated_html(html):
             "key === 'oot.o2r'" in html and "key === 'oot-mq.o2r'" in html
         ),
         "runtime-ready flag": "window._rtReady = true;" in html,
+        "ROM picker enabled after runtime": "romInput.disabled = false;" in html,
+        "drag-and-drop blocked before runtime": "Aguarde o carregamento antes de selecionar a ROM." in html,
+        "ROM picker initially disabled": bool(re.search(
+            r"<input\\b[^>]*\\bid\\s*=\\s*['\\\"]?otr-file['\\\"]?[^>]*\\bdisabled\\b", html
+        )),
         "ROM extraction export": "Module._web_extract_rom" in html,
         "exact OTR buffer slice": bool(re.search(
             r"\.buffer\.slice\([^)]*\.byteOffset[^)]*\.byteLength", html
