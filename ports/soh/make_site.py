@@ -199,7 +199,7 @@ def main(argv):
     runtime_js = open(os.path.join(site, "soh.js"), encoding="utf-8").read()
     if "soh.wasm" not in runtime_js or "soh.data" not in runtime_js:
         raise RuntimeError("Emscripten loader does not reference both soh.wasm and soh.data")
-    if not re.search(r"<script\\b[^>]*\\bsrc\\s*=\\s*['\\\"]?soh\\.js(?:['\\\"]|[>\\s])", html):
+    if not any(marker in html for marker in ("src=soh.js", 'src="soh.js"', "src='soh.js'")):
         raise RuntimeError("index.html does not load soh.js")
     for module in ("cloud_auth.js", "cloud_saves.js"):
         if module not in html:
