@@ -34,6 +34,11 @@ jobs:
           sudo apt-get install -y build-essential git python3 python3-numpy python3-pil cmake ninja-build \
             libglew-dev libsdl2-dev libz-dev zip pkg-config
 
+      - name: Check browser JavaScript syntax before compiling
+        run: |
+          node --check --input-type=module < ports/soh/cloud_auth.js
+          node --check ports/soh/cloud_saves.js
+
       - name: Setup Emscripten
         uses: emscripten-core/setup-emsdk@v15
         with:
