@@ -40,18 +40,14 @@ jobs:
           version: 6.0.10
           actions-cache-folder: emsdk-cache
 
-      - name: Check public clean-room resource archives
+      - name: Check public SoH runtime archive
         run: |
           mkdir -p resource-input
           curl --fail --location --retry 3 \
             https://andrewnakas.github.io/oot-cleanroom/soh.o2r \
             --output resource-input/soh.o2r
-          curl --fail --location --retry 3 \
-            https://andrewnakas.github.io/oot-cleanroom/oot.o2r \
-            --output resource-input/oot.o2r
           test -s resource-input/soh.o2r
-          test -s resource-input/oot.o2r
-          ls -lh resource-input/*.o2r
+          ls -lh resource-input/soh.o2r
 
       - name: Validate PT-BR data, Python dependencies and archives
         run: |
@@ -60,7 +56,7 @@ jobs:
           python3 -m ports.soh.validate_ptbr
           python3 - <<'PY'
           from zipfile import ZipFile
-          for path in ("resource-input/soh.o2r", "resource-input/oot.o2r"):
+          for path in ("resource-input/soh.o2r",):
               with ZipFile(path) as archive:
                   if not archive.namelist():
                       raise SystemExit(f"Archive is empty: {path}")
@@ -108,8 +104,7 @@ jobs:
           mkdir -p build-web/soh
           cp resource-input/soh-clean.o2r build-web/soh/soh.o2r
           python3 ports/soh/make_site.py \
-            build-web/soh build-web/soh/soh.o2r \
-            resource-input/oot.o2r site
+            build-web/soh build-web/soh/soh.o2r site
 
       - name: Upload playable web build
         uses: actions/upload-artifact@v7
