@@ -26,6 +26,8 @@ function setStatus(message) {
 }
 
 function showRestoreChoice(backup) {
+  const expectedUserId = currentUser && currentUser.id;
+  if (!expectedUserId) return;
   let panel = document.getElementById("cr-cloud-choice");
   if (!panel) {
     panel = document.createElement("div");
@@ -45,8 +47,7 @@ function showRestoreChoice(backup) {
     local.disabled = true;
     message.textContent = "Baixando e verificando os arquivos...";
     try {
-      const restoreUserId = currentUser && currentUser.id;
-      await restoreBackup(backup, restoreUserId);
+      await restoreBackup(backup, expectedUserId);
       panel.remove();
       startupState = 1;
       setStatus("Save restaurado da nuvem");
@@ -58,9 +59,10 @@ function showRestoreChoice(backup) {
     }
   };
   local.onclick = () => {
+    if (!currentUser || currentUser.id !== expectedUserId) return;
     panel.remove();
     startupState = 1;
-    setStatus("Usando save local");
+    setStatus("Save local escolhido para esta conta");
   };
 }
 
