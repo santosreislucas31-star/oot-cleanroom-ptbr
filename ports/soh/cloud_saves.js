@@ -80,7 +80,12 @@ async function listLatestBackup(userId) {
   for (const folder of folders) {
     const base = userId + "/" + folder.name;
     const { data, error: downloadError } = await supabase.storage.from(BUCKET).download(base + "/" + MANIFEST_NAME);
-    if (downloadError || !data) continue;
+    if (downloadError) {
+      const statusCode = String(downloadError.statusCode || "");
+      if (statusCode === "404") continue; // Incomplete backup folder; try an older complete backup.
+      throw downloadError;
+    }
+    if (!data) continue;
     try {
       const manifest = JSON.parse(await data.text());
       if (manifest && manifest.files && ((Array.isArray(manifest.files) && manifest.files.some(file => file && SAVE_NAME.test(file.name))) || (!Array.isArray(manifest.files) && Object.keys(manifest.files).some(name => SAVE_NAME.test(name))))) {
@@ -93,49 +98,71 @@ async function listLatestBackup(userId) {
 
 async function restoreBackup(backup) {
   const fs = getFS();
-  if (!fs || typeof fs.writeFile !== "function") throw new Error("Sistema de arquivos do jogo indisponível");
-  const listed = Array.isArray(backup.manifest.files)
-    ? backup.manifest.files.map(meta => [meta.name, meta])
-    : Object.entries(backup.manifest.files);
-  const files = listed
-    .filter(([name, meta]) => SAVE_NAME.test(name) || name === "global.sav")
-    .filter(([, meta]) => meta && typeof meta.sha256 === "string");
-  if (!files.length) throw new Error("O backup não contém saves válidos");
+  if (!fs || typeof fs.writeFile !== "function" || typeof fs.readdir !== "function") {
+    throw new Error("Sistema de arquivos do jogo indisponível");
+  }
 
+  const listed = Array.isArray(backup.manifest.files)
+    ? backup.manifest.files.map(meta => [meta && meta.name, meta])
+    : Object.entries(backup.manifest.files || {});
+  const files = listed.filter(([name, meta]) =>
+    typeof name === "string" &&
+    (SAVE_NAME.test(name) || name === "global.sav") &&
+    meta &&
+    typeof meta.sha256 === "string"
+  );
+  if (!files.some(([name]) => SAVE_NAME.test(name))) {
+    throw new Error("O backup não contém saves válidos");
+  }
+
+  // Never trust a path supplied by the manifest. All downloads stay inside
+  // the selected user's backup folder and use a validated save filename.
   const downloaded = [];
+  const seen = new Set();
   for (const [name, meta] of files) {
-    const objectPath = meta.path || (backup.base + "/" + name);
+    if (seen.has(name)) throw new Error("O backup contém nomes de arquivo duplicados");
+    seen.add(name);
+    const objectPath = backup.base + "/" + name;
     const { data, error } = await supabase.storage.from(BUCKET).download(objectPath);
     if (error || !data) throw error || new Error("Arquivo ausente: " + name);
     const bytes = new Uint8Array(await data.arrayBuffer());
-    if (meta.size != null && bytes.byteLength !== Number(meta.size)) throw new Error("Tamanho divergente: " + name);
+    if (meta.size != null && bytes.byteLength !== Number(meta.size)) {
+      throw new Error("Tamanho divergente: " + name);
+    }
     const hash = await sha256(bytes);
     if (hash !== meta.sha256) throw new Error("Integridade divergente: " + name);
     downloaded.push({ name, bytes });
   }
 
-  const previous = [];
+  // A restore is a replacement, not a merge: remove stale local save slots
+  // that are absent from the cloud snapshot. Keep a full rollback snapshot.
+  const isSaveFile = name => SAVE_NAME.test(name) || name === "global.sav";
+  const previous = new Map();
+  for (const name of fs.readdir(SAVE_DIR).filter(isSaveFile)) {
+    previous.set(name, new Uint8Array(fs.readFile(SAVE_DIR + "/" + name)));
+  }
+
   try {
+    const incoming = new Set(downloaded.map(item => item.name));
+    for (const name of previous.keys()) {
+      if (!incoming.has(name)) fs.unlink(SAVE_DIR + "/" + name);
+    }
     for (const item of downloaded) {
-      const path = SAVE_DIR + "/" + item.name;
-      let existed = false;
-      let oldBytes = null;
-      try {
-        oldBytes = fs.readFile(path);
-        existed = true;
-      } catch (_) {}
-      previous.push({ path, existed, oldBytes });
-      fs.writeFile(path, item.bytes);
+      fs.writeFile(SAVE_DIR + "/" + item.name, item.bytes);
     }
     await persistIdbfs();
   } catch (error) {
-    for (const item of previous.reverse()) {
-      try {
-        if (item.existed) fs.writeFile(item.path, item.oldBytes);
-        else fs.unlink(item.path);
-      } catch (_) {}
+    try {
+      for (const name of fs.readdir(SAVE_DIR).filter(isSaveFile)) {
+        if (!previous.has(name)) fs.unlink(SAVE_DIR + "/" + name);
+      }
+      for (const [name, bytes] of previous) {
+        fs.writeFile(SAVE_DIR + "/" + name, bytes);
+      }
+      await persistIdbfs();
+    } catch (rollbackError) {
+      console.error("[Cloud Save] Restore rollback failed:", rollbackError);
     }
-    try { await persistIdbfs(); } catch (_) {}
     throw error;
   }
   lastFingerprint = "";
@@ -251,8 +278,10 @@ async function initializeForUser(sessionUser) {
   initializedUserId = sessionUser.id;
 
   if (startupFinished) {
-    startupState = 1;
-    setStatus("Conectado — backup automático ativo");
+    // The game may already contain another account's local save. Never upload
+    // that data to a newly signed-in account; reload to run the restore choice.
+    currentUser = null;
+    setStatus("Conta conectada — recarregue para escolher o save da nuvem");
     return;
   }
 
@@ -270,7 +299,8 @@ async function initializeForUser(sessionUser) {
     }
   } catch (error) {
     console.error("[Cloud Save] Startup check failed:", error);
-    startupState = 1; // Cloud unavailable: keep the local save and allow offline play.
+    currentUser = null; // Do not overwrite a possibly newer cloud backup after a failed check.
+    startupState = 1;
     setStatus("Nuvem indisponível — usando save local");
   }
 }
