@@ -1,0 +1,33 @@
+name: Deploy existing PT-BR web build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-pages:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download successful web build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ocarina-ptbr-web
+          run-id: 43815416571
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: site/
+
+      - name: Upload site for GitHub Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
