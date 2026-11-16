@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: zalo/Shipwright
-          ref: feature/emscripten-web-port
+          ref: f81ff64afdd8e0489237bd03c6b026582f6dc70d
           path: sohweb
           submodules: recursive
 
