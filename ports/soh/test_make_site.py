@@ -17,10 +17,12 @@ MINIFIED_HTML = r"""
 <p>Click or drag to load game files</p>
 <p>Requires soh.o2r and either oot.o2r or a .z64 ROM</p>
 <p>Missing oot.o2r — please upload an OoT archive.</p>
+<input id=otr-file accept=.otr,.o2r,.z64,.n64,.v64 multiple type=file>
 <script>
 var OTR_DB_NAME="soh_otr_files",OTR_DB_STORE="otr";
 function checkCachedOtr(){listCachedFiles().then((function(e){if(e.length>0){showProgress()}}))}
 document.getElementById("otr-file").addEventListener("change",function(){});
+function handleOtrFiles(e){showProgress()}
 var Module={onRuntimeInitialized:function(){startGame()}};
 function t(){try{if(Module&&Module._web_wants_text_input){Module._web_wants_text_input()}}catch(e){}}
 Module._web_extract_rom("/rom.z64","/oot.o2r");
@@ -35,6 +37,7 @@ READABLE_HTML = r"""
 <p>Click or drag to load game files</p>
 <p>Requires soh.o2r and either oot.o2r or a .z64 ROM</p>
 <p>Missing oot.o2r — please upload an OoT archive.</p>
+<input id="otr-file" accept=".otr,.o2r,.z64,.n64,.v64" multiple type="file">
 <script>
 var OTR_DB_NAME = 'soh_otr_files';
 function checkCachedOtr() {
@@ -43,6 +46,7 @@ function checkCachedOtr() {
   });
 }
 document.getElementById("otr-file").addEventListener("change", function() {});
+function handleOtrFiles(e) { showProgress(); }
 var Module = { onRuntimeInitialized: function() { startGame(); } };
 function t() { try { if (Module && Module._web_wants_text_input) { Module._web_wants_text_input(); } } catch (e) {} }
 Module._web_extract_rom("/rom.z64", "/oot.o2r");
@@ -59,6 +63,9 @@ class GeneratedHtmlPatchTests(unittest.TestCase):
         self.assertIn("key === 'oot.o2r'", result)
         self.assertIn("key === 'oot-mq.o2r'", result)
         self.assertIn("window._rtReady = true;", result)
+        self.assertIn("romInput.disabled = false;", result)
+        self.assertIn("Aguarde o carregamento antes de selecionar a ROM.", result)
+        self.assertIn("disabled", result[result.find("id=otr-file"):result.find(">", result.find("id=otr-file"))])
         self.assertIn("Module && window._rtReady && Module._web_wants_text_input", result)
         return result
 
