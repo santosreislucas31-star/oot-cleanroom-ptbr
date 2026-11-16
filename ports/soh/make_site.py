@@ -38,8 +38,13 @@ def main(argv):
     html = re.sub(r"<title>[^<]*</title>", "<title>Ocarina of Time PT-BR</title>", html)
     html = html.replace("<h1>Ship of Harkinian</h1>", "<h1>Ocarina of Time &mdash; Clean Room</h1>")
     html = html.replace("WebAssembly Port", "Ship of Harkinian web build &middot; recursos extra&iacute;dos localmente da sua ROM")
-    # this site always ships its archives: a failed download (e.g. mid-deploy) retries
-    # instead of falling back to the shell's "load game files / ROM" picker
+    # A new cache namespace prevents an old clean-room oot.o2r from being reused.
+    html = html.replace("var OTR_DB_NAME = 'soh_otr_files';",
+                        "var OTR_DB_NAME = 'soh_otr_files_local_rom_v1';")
+    # Do not treat the cached soh.o2r alone as a complete game installation.
+    html = html.replace("if (keys.length > 0) {",
+                        "if (keys.some(function(key) { return key === 'oot.o2r' || key === 'oot-mq.o2r'; })) {")
+    # this site still downloads its small SoH runtime archive; retry interrupted downloads.
     html = html.replace('showError("Download failed: "+r.join(", ")),hideProgress()',
                         'setStatus("Download interrupted, retrying..."),setTimeout(function(){location.reload()},4000)')
     # a click or tap while the game is still loading called into the wasm module before its
