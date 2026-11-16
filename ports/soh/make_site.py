@@ -44,9 +44,6 @@ def main(argv):
     # Do not treat the cached soh.o2r alone as a complete game installation.
     html = html.replace("if (keys.length > 0) {",
                         "if (keys.some(function(key) { return key === 'oot.o2r' || key === 'oot-mq.o2r'; })) {")
-    # this site still downloads its small SoH runtime archive; retry interrupted downloads.
-    html = html.replace('showError("Download failed: "+r.join(", ")),hideProgress()',
-                        'setStatus("Download interrupted, retrying..."),setTimeout(function(){location.reload()},4000)')
     # a click or tap while the game is still loading called into the wasm module before its
     # runtime was up, which aborts it for good: ask only once the runtime is initialised
     html = html.replace("onRuntimeInitialized: function() {", "onRuntimeInitialized: function() { window._rtReady = true;", 1)
