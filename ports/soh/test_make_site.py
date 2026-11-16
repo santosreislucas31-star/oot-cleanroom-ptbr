@@ -6,6 +6,7 @@ Run before the expensive C++/WASM build:
 import os
 import tempfile
 import unittest
+import zipfile
 
 from ports.soh.make_site import CACHE_DB_NAME, main, patch_generated_html
 
@@ -24,7 +25,7 @@ var Module={onRuntimeInitialized:function(){startGame()}};
 function t(){try{if(Module&&Module._web_wants_text_input){Module._web_wants_text_input()}}catch(e){}}
 Module._web_extract_rom("/rom.z64","/oot.o2r");
 var o2rBuffer=o2rData.buffer.slice(o2rData.byteOffset,o2rData.byteOffset+o2rData.byteLength);
-</script></body></html>
+</script><script async src=soh.js></script></body></html>
 """
 
 
@@ -81,10 +82,10 @@ class GeneratedHtmlPatchTests(unittest.TestCase):
                 file.write(MINIFIED_HTML)
             for name in ("soh.js", "soh.wasm", "soh.data"):
                 with open(os.path.join(build, name), "wb") as file:
-                    file.write(b"fixture")
+                    file.write(b"soh.wasm soh.data" if name == "soh.js" else b"fixture")
             runtime = os.path.join(temp, "soh.o2r")
-            with open(runtime, "wb") as file:
-                file.write(b"fixture")
+            with zipfile.ZipFile(runtime, "w") as archive:
+                archive.writestr("portVersion", "1.0")
             main(["make_site.py", build, runtime, site])
             self.assertEqual(
                 set(os.listdir(site)),
