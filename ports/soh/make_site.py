@@ -83,7 +83,12 @@ def patch_generated_html(html):
         "drag-and-drop waits for runtime",
     )
 
-    checks = {
+    picker_start = html.find('id=otr-file')
+    if picker_start < 0:
+        picker_start = html.find('id="otr-file"')
+    picker_end = html.find(">", picker_start) if picker_start >= 0 else -1
+    picker_html = html[picker_start:picker_end] if picker_end >= 0 else ""
+
     checks = {
         "new cache namespace": CACHE_DB_NAME in html,
         "old cache namespace absent": all(
@@ -100,9 +105,7 @@ def patch_generated_html(html):
         "runtime-ready flag": "window._rtReady = true;" in html,
         "ROM picker enabled after runtime": "romInput.disabled = false;" in html,
         "drag-and-drop blocked before runtime": "Aguarde o carregamento antes de selecionar a ROM." in html,
-        "ROM picker initially disabled": bool(re.search(
-            r"<input\\b[^>]*\\bid\\s*=\\s*['\\\"]?otr-file['\\\"]?[^>]*\\bdisabled\\b", html
-        )),
+        "ROM picker initially disabled": picker_start >= 0 and "disabled" in picker_html,
         "ROM extraction export": "Module._web_extract_rom" in html,
         "exact OTR buffer slice": bool(re.search(
             r"\.buffer\.slice\([^)]*\.byteOffset[^)]*\.byteLength", html
