@@ -36,7 +36,7 @@ def main(argv):
             "if(_dv)window._devCvars=_dv;}catch(e){}</script>")
     html = html.replace("<head>", "<head>" + boot, 1)
     html = re.sub(r"<title>[^<]*</title>", "<title>Ocarina of Time PT-BR</title>", html)
-    html = html.replace("<h1>Ship of Harkinian</h1>", "<h1>Ocarina of Time &mdash; Clean Room</h1>")
+    html = html.replace("<h1>Ship of Harkinian</h1>", "<h1>Ocarina of Time &mdash; PT-BR</h1>")
     html = html.replace("WebAssembly Port", "Ship of Harkinian web build &middot; recursos extra&iacute;dos localmente da sua ROM")
     # A new cache namespace prevents an old clean-room oot.o2r from being reused.
     html = html.replace("var OTR_DB_NAME = 'soh_otr_files';",
