@@ -1,9 +1,9 @@
-"""Assemble the web site from the SoH web build + clean archives.
+"""Assemble the web site with the SoH runtime archive and local ROM extraction.
 
-    python ports/soh/make_site.py <soh build dir (build-web/soh)> <soh.o2r> <clean oot.o2r> <site dir>
+    python ports/soh/make_site.py <soh build dir (build-web/soh)> <soh.o2r> <site dir>
 
-The page loads soh.o2r and oot.o2r from the site itself (no ROM, no upload),
-through the shell's own #soh=/#oot= URL loader.
+The site ships only soh.o2r. Players select their own ROM; ZAPD extracts its
+assets locally in the browser and the resulting oot.o2r is kept in IndexedDB.
 """
 import os
 import re
@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def main(argv):
-    build, soh_o2r, oot_o2r, site = argv[1:5]
+    build, soh_o2r, site = argv[1:4]
     os.makedirs(site, exist_ok=True)
     required = ("soh.html", "soh.js", "soh.wasm")
     missing = [f for f in required if not os.path.isfile(os.path.join(build, f))]
@@ -25,23 +25,19 @@ def main(argv):
         if os.path.isfile(source):
             shutil.copyfile(source, os.path.join(site, f))
     shutil.copyfile(soh_o2r, os.path.join(site, "soh.o2r"))
-    shutil.copyfile(oot_o2r, os.path.join(site, "oot.o2r"))
     # Keep the optional browser auth module beside index.html.
     for module in ("cloud_auth.js", "cloud_saves.js"):
         source = os.path.join(HERE, module)
         if os.path.isfile(source):
             shutil.copyfile(source, os.path.join(site, module))
     html = open(os.path.join(build, "soh.html"), encoding="utf-8").read()
-    ver = str(int(os.path.getmtime(os.path.join(site, "oot.o2r"))))
     # default boot: the authentic N64-logo -> title sequence (SoH's own ship logo stalls on some hosts)
     boot = ("<script>window._devCvars='gSettings.BootSequence:1';try{var _dv=new URLSearchParams(location.search).get('dev');"
-            "if(_dv)window._devCvars=_dv;}catch(e){}</script>"
-            "<script>if(!location.hash||location.hash.length<2){history.replaceState(null,'',"
-            "location.pathname+location.search+'#soh=soh.o2r%3Fv%3D" + ver + "&oot=oot.o2r%3Fv%3D" + ver + "');}</script>")
+            "if(_dv)window._devCvars=_dv;}catch(e){}</script>")
     html = html.replace("<head>", "<head>" + boot, 1)
-    html = re.sub(r"<title>[^<]*</title>", "<title>Ocarina of Time Clean Room</title>", html)
+    html = re.sub(r"<title>[^<]*</title>", "<title>Ocarina of Time PT-BR</title>", html)
     html = html.replace("<h1>Ship of Harkinian</h1>", "<h1>Ocarina of Time &mdash; Clean Room</h1>")
-    html = html.replace("WebAssembly Port", "Ship of Harkinian web build &middot; every ROM asset regenerated")
+    html = html.replace("WebAssembly Port", "Ship of Harkinian web build &middot; recursos extra&iacute;dos localmente da sua ROM")
     # this site always ships its archives: a failed download (e.g. mid-deploy) retries
     # instead of falling back to the shell's "load game files / ROM" picker
     html = html.replace('showError("Download failed: "+r.join(", ")),hideProgress()',
@@ -51,8 +47,9 @@ def main(argv):
     html = html.replace("onRuntimeInitialized:function(){", "onRuntimeInitialized:function(){window._rtReady=!0;", 1)
     html = html.replace("if(Module&&Module._web_wants_text_input)",
                         "if(Module&&window._rtReady&&Module._web_wants_text_input)")
-    html = html.replace("Click or drag to load game files", "Loading game files...")
-    html = html.replace("Requires soh.o2r and either oot.o2r or a .z64 ROM", "No ROM needed")
+    html = html.replace("Click or drag to load game files", "Selecione sua ROM de Ocarina of Time")
+    html = html.replace("Requires soh.o2r and either oot.o2r or a .z64 ROM", "Sua ROM n&atilde;o ser&aacute; enviada; a extra&ccedil;&atilde;o ocorre neste navegador.")
+    html = html.replace("Missing oot.o2r — please upload an OoT archive.", "Selecione sua ROM de Ocarina of Time (.z64, .n64 ou .v64) para extrair os recursos neste navegador.")
     extra = os.path.join(HERE, "site_extra.html")
     if os.path.exists(extra):
         html = html.replace("</body>", open(extra, encoding="utf-8").read() + "</body>")
