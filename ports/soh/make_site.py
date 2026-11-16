@@ -49,9 +49,9 @@ def main(argv):
                         'setStatus("Download interrupted, retrying..."),setTimeout(function(){location.reload()},4000)')
     # a click or tap while the game is still loading called into the wasm module before its
     # runtime was up, which aborts it for good: ask only once the runtime is initialised
-    html = html.replace("onRuntimeInitialized:function(){", "onRuntimeInitialized:function(){window._rtReady=!0;", 1)
-    html = html.replace("if(Module&&Module._web_wants_text_input)",
-                        "if(Module&&window._rtReady&&Module._web_wants_text_input)")
+    html = html.replace("onRuntimeInitialized: function() {", "onRuntimeInitialized: function() { window._rtReady = true;", 1)
+    html = html.replace("if (Module && Module._web_wants_text_input)",
+                        "if (Module && window._rtReady && Module._web_wants_text_input)")
     html = html.replace("Click or drag to load game files", "Selecione sua ROM de Ocarina of Time")
     html = html.replace("Requires soh.o2r and either oot.o2r or a .z64 ROM", "Sua ROM n&atilde;o ser&aacute; enviada; a extra&ccedil;&atilde;o ocorre neste navegador.")
     html = html.replace("Missing oot.o2r — please upload an OoT archive.", "Selecione sua ROM de Ocarina of Time (.z64, .n64 ou .v64) para extrair os recursos neste navegador.")
