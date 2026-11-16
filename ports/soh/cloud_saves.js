@@ -77,7 +77,7 @@ async function listLatestBackup(userId) {
   });
   if (error) throw error;
   const folders = (entries || [])
-    .filter(item => item.name && /^backup-\\d{4}-\\d{2}-\\d{2}T\\d{2}-\\d{2}-\\d{2}-\\d{3}Z$/.test(item.name))
+    .filter(item => item.name && /^backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z$/.test(item.name))
     .sort((a, b) => b.name.localeCompare(a.name));
   for (const folder of folders) {
     const base = userId + "/" + folder.name;
