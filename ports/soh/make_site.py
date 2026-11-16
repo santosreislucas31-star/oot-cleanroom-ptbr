@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE_DB_NAME = "soh_otr_files_local_rom_v1"
@@ -109,6 +110,16 @@ def main(argv):
         raise FileNotFoundError("Missing required Emscripten output(s): " + ", ".join(missing))
     if not os.path.isfile(soh_o2r) or os.path.getsize(soh_o2r) == 0:
         raise FileNotFoundError("Missing or empty soh.o2r runtime archive")
+    try:
+        with zipfile.ZipFile(soh_o2r) as archive:
+            names = archive.namelist()
+            if not names or "portVersion" not in names:
+                raise RuntimeError("soh.o2r is missing required archive entries")
+            corrupt = archive.testzip()
+            if corrupt:
+                raise RuntimeError("Corrupt entry in soh.o2r: " + corrupt)
+    except zipfile.BadZipFile as error:
+        raise RuntimeError("soh.o2r is not a valid ZIP/OTR archive") from error
 
     # Copy only runtime assets. The unmodified upstream soh.html is deliberately
     # omitted: index.html is the single patched, PT-BR entry point.
@@ -184,6 +195,17 @@ def main(argv):
         path = os.path.join(site, name)
         if os.path.getsize(path) == 0:
             raise RuntimeError("Generated site file is empty: " + name)
+
+    runtime_js = open(os.path.join(site, "soh.js"), encoding="utf-8").read()
+    if "soh.wasm" not in runtime_js or "soh.data" not in runtime_js:
+        raise RuntimeError("Emscripten loader does not reference both soh.wasm and soh.data")
+    if not re.search(r"<script\\b[^>]*\\bsrc\\s*=\\s*['\\\"]?soh\\.js(?:['\\\"]|[>\\s])", html):
+        raise RuntimeError("index.html does not load soh.js")
+    for module in ("cloud_auth.js", "cloud_saves.js"):
+        if module not in html:
+            raise RuntimeError("index.html does not load " + module)
+    if "soh.o2r" not in html or "Module._web_extract_rom" not in html:
+        raise RuntimeError("index.html is missing the engine archive or local ROM extraction")
 
     print("Verified site files:", sorted(actual))
     print("Verified cache namespace:", CACHE_DB_NAME)
