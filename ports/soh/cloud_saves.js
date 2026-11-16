@@ -11,6 +11,7 @@ let syncRunning = false;
 let syncQueued = false;
 let backupTimer = null;
 let lastFingerprint = "";
+let authGeneration = 0;
 
 const supabase = window.ootSupabase;
 
@@ -44,7 +45,8 @@ function showRestoreChoice(backup) {
     local.disabled = true;
     message.textContent = "Baixando e verificando os arquivos...";
     try {
-      await restoreBackup(backup);
+      const restoreUserId = currentUser && currentUser.id;
+      await restoreBackup(backup, restoreUserId);
       panel.remove();
       startupState = 1;
       setStatus("Save restaurado da nuvem");
@@ -96,8 +98,11 @@ async function listLatestBackup(userId) {
   return null;
 }
 
-async function restoreBackup(backup) {
+async function restoreBackup(backup, expectedUserId) {
   const fs = getFS();
+  if (!currentUser || currentUser.id !== expectedUserId) {
+    throw new Error("A conta mudou durante a restauração");
+  }
   if (!fs || typeof fs.writeFile !== "function" || typeof fs.readdir !== "function") {
     throw new Error("Sistema de arquivos do jogo indisponível");
   }
@@ -134,6 +139,10 @@ async function restoreBackup(backup) {
     downloaded.push({ name, bytes });
   }
 
+  if (!currentUser || currentUser.id !== expectedUserId) {
+    throw new Error("A conta mudou durante a restauração");
+  }
+
   // A restore is a replacement, not a merge: remove stale local save slots
   // that are absent from the cloud snapshot. Keep a full rollback snapshot.
   const isSaveFile = name => SAVE_NAME.test(name) || name === "global.sav";
@@ -151,6 +160,9 @@ async function restoreBackup(backup) {
       fs.writeFile(SAVE_DIR + "/" + item.name, item.bytes);
     }
     await persistIdbfs();
+    if (!currentUser || currentUser.id !== expectedUserId) {
+      throw new Error("A conta mudou durante a restauração");
+    }
   } catch (error) {
     try {
       for (const name of fs.readdir(SAVE_DIR).filter(isSaveFile)) {
@@ -266,16 +278,25 @@ function persistLocalFiles() {
 }
 
 async function initializeForUser(sessionUser) {
+  // Ignore duplicate INITIAL_SESSION/getSession notifications for the same user
+  // without invalidating an in-flight lookup for that account.
+  if (sessionUser && initializedUserId === sessionUser.id) return;
+  const generation = ++authGeneration;
+
   if (!sessionUser) {
     currentUser = null;
     initializedUserId = null;
+    const choice = document.getElementById("cr-cloud-choice");
+    if (choice) choice.remove();
     if (!startupFinished) startupState = 1;
     setStatus("Não conectado — save local");
     return;
   }
-  if (initializedUserId === sessionUser.id) return;
+
   currentUser = sessionUser;
   initializedUserId = sessionUser.id;
+  const previousChoice = document.getElementById("cr-cloud-choice");
+  if (previousChoice) previousChoice.remove();
 
   if (startupFinished) {
     // The game may already contain another account's local save. Never upload
@@ -289,15 +310,19 @@ async function initializeForUser(sessionUser) {
   setStatus("Verificando backup na nuvem...");
   try {
     const { data: verified, error } = await supabase.auth.getUser();
+    if (generation !== authGeneration || !currentUser || currentUser.id !== sessionUser.id) return;
     if (error) throw error;
     if (!verified.user || verified.user.id !== sessionUser.id) throw new Error("Sessão não validada");
+
     const backup = await listLatestBackup(verified.user.id);
+    if (generation !== authGeneration || !currentUser || currentUser.id !== sessionUser.id) return;
     if (backup) showRestoreChoice(backup);
     else {
       startupState = 1;
       setStatus("Conectado — nenhum backup anterior");
     }
   } catch (error) {
+    if (generation !== authGeneration || !currentUser || currentUser.id !== sessionUser.id) return;
     console.error("[Cloud Save] Startup check failed:", error);
     currentUser = null; // Do not overwrite a possibly newer cloud backup after a failed check.
     startupState = 1;
