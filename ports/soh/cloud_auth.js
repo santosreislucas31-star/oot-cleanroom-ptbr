@@ -40,11 +40,13 @@ if (root) {
     login.disabled = true;
     status.textContent = "Abrindo GitHub...";
     const redirectTo = location.origin + location.pathname + location.search;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: { redirectTo }
-    });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: { redirectTo }
+      });
+      if (error) throw error;
+    } catch (error) {
       showSignedOut("Falha no login: " + error.message);
       login.disabled = false;
     }
@@ -52,9 +54,14 @@ if (root) {
 
   logout.addEventListener("click", async () => {
     logout.disabled = true;
-    const { error } = await supabase.auth.signOut();
-    if (error) status.textContent = "Erro ao sair: " + error.message;
-    logout.disabled = false;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      status.textContent = "Erro ao sair: " + error.message;
+    } finally {
+      logout.disabled = false;
+    }
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
