@@ -16,16 +16,21 @@ CACHE_DB_NAME = "soh_otr_files_local_rom_v1"
 
 
 def replace_literal_required(html, old, new, label):
-    if old not in html:
-        raise RuntimeError("Could not apply required HTML text patch: " + label)
+    count = html.count(old)
+    if count != 1:
+        raise RuntimeError(
+            "Expected exactly one occurrence for HTML text patch " + label + "; found " + str(count)
+        )
     return html.replace(old, new, 1)
 
 
 def replace_required(pattern, replacement, html, label, flags=0):
-    html, count = re.subn(pattern, replacement, html, count=1, flags=flags)
-    if count != 1:
-        raise RuntimeError("Could not apply required HTML patch: " + label)
-    return html
+    matches = list(re.finditer(pattern, html, flags))
+    if len(matches) != 1:
+        raise RuntimeError(
+            "Expected exactly one match for HTML patch " + label + "; found " + str(len(matches))
+        )
+    return re.sub(pattern, replacement, html, count=1, flags=flags)
 
 
 def patch_generated_html(html):
