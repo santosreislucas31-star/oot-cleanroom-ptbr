@@ -14,15 +14,17 @@ Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com di�
 
 Este repositório mantém uma versão web de Ocarina of Time baseada no projeto **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador desenvolvido no fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**.
 
-O trabalho parte da base **[andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom)**, que reconstrói os recursos necessários ao jogo em um formato clean-room. Esta adaptação integra dados de diálogos em PT-BR, ajustes para a execução no navegador e um fluxo automatizado de compilação e publicação.
+A versão web usa o extrator ZAPD do Ship of Harkinian para gerar os recursos do jogo a partir de uma ROM selecionada pela própria pessoa, diretamente no navegador. O projeto também integra os diálogos em PT-BR e mantém os saves locais e na nuvem.
 
-O objetivo é deixar uma versão jogável acessível por um link, sem exigir que a pessoa configure um ambiente de desenvolvimento ou forneça uma ROM ao site.
+O site não distribui uma ROM nem recebe o arquivo selecionado. Na primeira visita, cada pessoa escolhe sua própria ROM compatível; a extração acontece no navegador e o arquivo resultante fica no armazenamento local do navegador (IndexedDB).
 
 ## Como jogar
 
 1. Abra **[o jogo no navegador](https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/)**.
-2. Aguarde o carregamento inicial dos arquivos. Na primeira visita, isso pode levar alguns minutos dependendo da conexão.
-3. Use o teclado ou conecte um controle compatível.
+2. Na primeira visita, selecione uma ROM própria e compatível (`.z64`, `.n64` ou `.v64`).
+3. Aguarde a extração dos recursos no navegador; o arquivo da ROM não é enviado ao site.
+4. Nas próximas visitas, os recursos extraídos são reutilizados do armazenamento local.
+5. Use o teclado ou conecte um controle compatível.
 
 ### Controles padrão
 
@@ -55,7 +57,7 @@ Isso significa que o texto está em português, mas a acentuação gráfica aind
 - **GitHub Actions** — compila o projeto nos servidores do GitHub.
 - **GitHub Pages** — hospeda a versão web publicada.
 
-O workflow **Build PT-BR web game** executa a validação dos dados, prepara os recursos, compila o projeto e publica o conteúdo gerado no GitHub Pages. A execução é iniciada manualmente pela aba **Actions**.
+O workflow **Build PT-BR web game** valida os dados, prepara o pacote de runtime, compila o projeto e gera um artefato de site. A ROM e o arquivo `oot.o2r` de cada pessoa não são incluídos nesse artefato.
 
 ## Estrutura relacionada ao PT-BR
 
@@ -71,7 +73,7 @@ Este trabalho é uma adaptação de projetos existentes, não uma engine criada 
 
 - **Ship of Harkinian:** [HarbourMasters/Shipwright](https://github.com/HarbourMasters/Shipwright).
 - **Port Emscripten/WebGL:** [zalo/Shipwright](https://github.com/zalo/Shipwright).
-- **Base clean-room:** [andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom).
+- **Extração de recursos:** ZAPD / OTRExporter, incluídos no Ship of Harkinian.
 - **Dados de mensagens PT-BR:** integração baseada no conjunto de mensagens atribuído a Geraldo Cruzeiro presente no projeto.
 
 Respeite as licenças e os créditos dos projetos e componentes de origem. **The Legend of Zelda** e seus personagens são propriedade de seus respectivos titulares. Este é um projeto independente de fãs, sem afiliação ou endosso da Nintendo.
