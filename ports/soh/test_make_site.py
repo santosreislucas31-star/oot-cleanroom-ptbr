@@ -17,6 +17,7 @@ MINIFIED_HTML = r"""
 <p>Click or drag to load game files</p>
 <p>Requires soh.o2r and either oot.o2r or a .z64 ROM</p>
 <p>Missing oot.o2r — please upload an OoT archive.</p>
+<p>Missing soh.o2r — please upload the SoH archive.</p>
 <input id=otr-file accept=.otr,.o2r,.z64,.n64,.v64 multiple type=file>
 <script>
 var OTR_DB_NAME="soh_otr_files",OTR_DB_STORE="otr";
