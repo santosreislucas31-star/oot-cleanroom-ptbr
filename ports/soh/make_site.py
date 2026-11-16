@@ -14,6 +14,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE_DB_NAME = "soh_otr_files_local_rom_v1"
 
 
+def replace_literal_required(html, old, new, label):
+    if old not in html:
+        raise RuntimeError("Could not apply required HTML text patch: " + label)
+    return html.replace(old, new, 1)
+
+
 def replace_required(pattern, replacement, html, label, flags=0):
     html, count = re.subn(pattern, replacement, html, count=1, flags=flags)
     if count != 1:
@@ -66,9 +72,13 @@ def patch_generated_html(html):
 
     checks = {
         "new cache namespace": CACHE_DB_NAME in html,
-        "old cache namespace absent": (
-            'OTR_DB_NAME="soh_otr_files"' not in html and
-            "OTR_DB_NAME = 'soh_otr_files'" not in html
+        "old cache namespace absent": all(
+            old not in html for old in (
+                "OTR_DB_NAME='soh_otr_files'",
+                'OTR_DB_NAME="soh_otr_files"',
+                "OTR_DB_NAME = 'soh_otr_files'",
+                'OTR_DB_NAME = "soh_otr_files"',
+            )
         ),
         "cache gate requires vanilla or MQ OOT archive": (
             "key === 'oot.o2r'" in html and "key === 'oot-mq.o2r'" in html
@@ -123,18 +133,28 @@ def main(argv):
     html, title_count = re.subn(r"<title>[^<]*</title>", "<title>Ocarina of Time PT-BR</title>", html, count=1)
     if title_count != 1:
         raise RuntimeError("Could not set the PT-BR page title")
-    html = html.replace("<h1>Ship of Harkinian</h1>", "<h1>Ocarina of Time &mdash; PT-BR</h1>", 1)
-    html = html.replace("WebAssembly Port", "Ship of Harkinian web build &middot; recursos extra&iacute;dos localmente da sua ROM", 1)
-    html = html.replace("Click or drag to load game files", "Selecione sua ROM de Ocarina of Time", 1)
-    html = html.replace(
-        "Requires soh.o2r and either oot.o2r or a .z64 ROM",
-        "Sua ROM n&atilde;o ser&aacute; enviada; a extra&ccedil;&atilde;o ocorre neste navegador.",
-        1,
+    html = replace_literal_required(
+        html, "<h1>Ship of Harkinian</h1>",
+        "<h1>Ocarina of Time &mdash; PT-BR</h1>", "PT-BR heading",
     )
-    html = html.replace(
-        "Missing oot.o2r — please upload an OoT archive.",
+    html = replace_literal_required(
+        html, "WebAssembly Port",
+        "Ship of Harkinian web build &middot; recursos extra&iacute;dos localmente da sua ROM",
+        "local-ROM subtitle",
+    )
+    html = replace_literal_required(
+        html, "Click or drag to load game files",
+        "Selecione sua ROM de Ocarina of Time", "ROM picker label",
+    )
+    html = replace_literal_required(
+        html, "Requires soh.o2r and either oot.o2r or a .z64 ROM",
+        "Sua ROM n&atilde;o ser&aacute; enviada; a extra&ccedil;&atilde;o ocorre neste navegador.",
+        "local ROM privacy notice",
+    )
+    html = replace_literal_required(
+        html, "Missing oot.o2r — please upload an OoT archive.",
         "Selecione sua ROM de Ocarina of Time (.z64, .n64 ou .v64) para extrair os recursos neste navegador.",
-        1,
+        "missing ROM guidance",
     )
 
     extra = os.path.join(HERE, "site_extra.html")
