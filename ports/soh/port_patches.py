@@ -78,6 +78,14 @@ void web_apply_anchor_config() {
     ("soh/CMakeLists.txt",
      "_web_wants_text_input,_malloc,_free",
      "_web_wants_text_input,_web_scene,_web_player_pos,_web_console,_web_select_warp,_malloc,_free"),
+    # A failed ZAPD run must not pass validation by leaving an older archive behind.
+    ("soh/soh/web/web_main.cpp",
+     "    // Run ZAPD extraction — output goes to \"/\" + expectedFile\n    std::atomic<size_t> extractCount(0);",
+     "    // Remove stale output archives before extracting this ROM.\n    ::remove(\"/oot.o2r\");\n    ::remove(\"/oot-mq.o2r\");\n    // Run ZAPD extraction — output goes to \"/\" + expectedFile\n    std::atomic<size_t> extractCount(0);"),
+    # Cache only the exact bytes of the generated archive, not a larger backing buffer.
+    ("soh/soh/web/shell.html",
+     "          var o2rBuffer = o2rData.buffer;",
+     "          var o2rBuffer = o2rData.buffer.slice(o2rData.byteOffset, o2rData.byteOffset + o2rData.byteLength);"),
     # 3. Cloud saves: wait for local IDBFS + optional cloud restore before game startup.
     ("soh/src/code/main.c",
      "    if (!web_is_idbfs_ready()) {\n        // IDBFS not yet loaded from IndexedDB - keep polling\n        return;\n    }",
