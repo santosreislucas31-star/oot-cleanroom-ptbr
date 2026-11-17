@@ -8,6 +8,13 @@ Uma adaptação de **The Legend of Zelda: Ocarina of Time** para jogar diretamen
 
 **[Abrir o jogo](https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/)** · **[Ver o código-fonte](https://github.com/santosreislucas31-star/oot-cleanroom-ptbr)** · **[Acompanhar as compilações](https://github.com/santosreislucas31-star/oot-cleanroom-ptbr/actions)**
 
+## Antes de começar
+
+- **ROM:** selecione seu próprio arquivo compatível (`.z64`, `.n64` ou `.v64`). A extração é feita no navegador; a ROM não é enviada ao servidor. Os recursos extraídos ficam salvos naquele navegador. Em outro computador ou navegador, será preciso selecionar a ROM e extrair os recursos novamente.
+- **Save:** o progresso é salvo localmente. Para transferi-lo entre dispositivos, conecte a mesma conta GitHub e, se houver um backup disponível, escolha restaurá-lo. A nuvem guarda o backup do save, não a ROM nem os recursos extraídos.
+
+
+
 ---
 
 ## Sobre o projeto
