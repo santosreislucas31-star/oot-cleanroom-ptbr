@@ -1,6 +1,6 @@
 # Ocarina of Time PT-BR — versão para navegador
 
-Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com diálogos em português brasileiro.
+Uma adaptação de **The Legend of Zelda: Ocarina of Time** para execução no navegador, com diálogos em português brasileiro.
 
 <p align="center">
   <a href="https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/"><strong>▶ JOGAR AGORA</strong></a>
@@ -10,13 +10,45 @@ Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com di�
 
 ---
 
-## Sobre o projeto
+## Visão geral
 
-Este repositório mantém uma versão web de Ocarina of Time baseada no projeto **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador desenvolvido no fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**.
+Este é um projeto pessoal criado a partir de uma necessidade simples: jogar Ocarina of Time no navegador sem precisar instalar um emulador ou configurar manualmente um ambiente complexo.
 
-O trabalho parte da base **[andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom)**, que reconstrói os recursos necessários ao jogo em um formato clean-room. Esta adaptação integra dados de diálogos em PT-BR, ajustes para a execução no navegador e um fluxo automatizado de compilação e publicação.
+O repositório mantém uma versão web baseada no projeto **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador desenvolvido no fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**. Também utiliza como referência a base **[andrewnakas/oot-cleanroom](https://github.com/andrewnakas/oot-cleanroom)** para a reconstrução dos recursos necessários ao jogo.
 
-O objetivo é deixar uma versão jogável acessível por um link, sem exigir que a pessoa configure um ambiente de desenvolvimento ou forneça uma ROM ao site.
+A adaptação reúne a integração de diálogos em português brasileiro, ajustes para execução no navegador e um fluxo automatizado de compilação e publicação.
+
+## Um experimento com inteligência artificial
+
+Além de criar uma versão jogável, este projeto teve outro objetivo: **explorar até onde seria possível chegar utilizando uma IA gratuita como principal ferramenta de desenvolvimento**.
+
+O código específico criado para a implementação deste projeto foi produzido pelo ChatGPT a partir das instruções e dos objetivos definidos durante o trabalho. A participação humana ficou concentrada na concepção da ideia, definição dos requisitos, escolhas de direção, avaliação dos resultados, testes e identificação dos problemas que precisavam ser resolvidos.
+
+O projeto foi conduzido de forma iterativa: a IA propunha e implementava soluções, enquanto os resultados eram executados e avaliados para orientar os próximos ajustes. A intenção é documentar o potencial — e também os limites — do uso de IA no desenvolvimento de software, inclusive em um projeto que envolve tecnologias e ferramentas diferentes.
+
+**Transparência:** este repositório não é uma engine criada do zero. Ele utiliza projetos e componentes preexistentes, identificados na seção de créditos. A descrição sobre o uso de IA refere-se ao desenvolvimento e às modificações conduzidas especificamente para esta adaptação.
+
+## Funcionalidades e tecnologias
+
+- Execução do jogo no navegador por meio de **WebAssembly**.
+- Renderização gráfica com **WebGL**.
+- Integração de diálogos em **português brasileiro**.
+- Preparação e validação automatizadas dos dados do projeto.
+- Compilação automatizada com **GitHub Actions**.
+- Hospedagem da versão web pelo **GitHub Pages**.
+
+### Tecnologias utilizadas
+
+| Tecnologia | Aplicação no projeto |
+|---|---|
+| C/C++ | Código do motor de jogo herdado da base Ship of Harkinian |
+| Emscripten / WebAssembly | Compilação para execução no navegador |
+| WebGL | Renderização gráfica |
+| JavaScript | Integrações e lógica da aplicação web |
+| Python | Validações, preparação de recursos e aplicação de patches |
+| Git e GitHub | Versionamento e organização do código |
+| GitHub Actions | Automação de compilação e publicação |
+| GitHub Pages | Hospedagem da versão web |
 
 ## Como jogar
 
@@ -43,19 +75,7 @@ Controles de jogo compatíveis também podem ser usados.
 
 A integração PT-BR inclui os dados de mensagens e o código que os incorpora ao port web. A versão atual prioriza a legibilidade durante a gameplay: por uma limitação de renderização da fonte no navegador, caracteres acentuados são convertidos para equivalentes sem acento (por exemplo, **“coração” → “coracao”**).
 
-Isso significa que o texto está em português, mas a acentuação gráfica ainda não está completa. A correção da fonte e a compatibilidade dos caracteres continuam sendo pontos de melhoria.
-
-## Tecnologias e fluxo de publicação
-
-- **C/C++** — código do motor do jogo.
-- **Ship of Harkinian** — engine usada para executar Ocarina of Time.
-- **Emscripten / WebAssembly** — compilação do código para execução no navegador.
-- **WebGL** — renderização gráfica no navegador.
-- **Python** — validações, preparação dos recursos e aplicação dos patches.
-- **GitHub Actions** — compila o projeto nos servidores do GitHub.
-- **GitHub Pages** — hospeda a versão web publicada.
-
-O workflow **Build PT-BR web game** executa a validação dos dados, prepara os recursos, compila o projeto e publica o conteúdo gerado no GitHub Pages. A execução é iniciada manualmente pela aba **Actions**.
+Isso significa que o texto está em português, mas a acentuação gráfica ainda não está completa. A correção da fonte e a compatibilidade dos caracteres permanecem como possíveis melhorias.
 
 ## Estrutura relacionada ao PT-BR
 
@@ -78,11 +98,13 @@ Respeite as licenças e os créditos dos projetos e componentes de origem. **The
 
 ---
 
-## Status
+## Status do projeto
+
+**Concluído para uso pessoal.** A versão publicada foi executada e testada pelo responsável pelo projeto. Melhorias e testes adicionais podem ser realizados futuramente, mas não fazem parte do objetivo atual.
 
 - [x] Compilação web concluída no GitHub Actions.
-- [x] Publicação automática no GitHub Pages.
-- [x] Jogo acessível pelo navegador.
+- [x] Publicação no GitHub Pages.
+- [x] Jogo acessível e executável pelo navegador.
 - [x] Integração de diálogos PT-BR incluída na build publicada.
 - [ ] Acentuação completa na fonte do jogo.
 - [ ] Testes mais amplos em diferentes navegadores, dispositivos e controles.
@@ -104,4 +126,3 @@ As imagens abaixo mostram capturas do projeto em execução no navegador.
     <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/fe94e80b-a64f-4d57-b9ad-192bb800ed26.png" alt="Captura de tela 5" width="420"></td>
   </tr>
 </table>
-
