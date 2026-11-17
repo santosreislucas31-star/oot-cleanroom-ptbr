@@ -1,6 +1,6 @@
 # Ocarina of Time PT-BR — versão para navegador
 
-Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com diálogos em português brasileiro.
+Uma adaptação de **The Legend of Zelda: Ocarina of Time** para jogar diretamente no navegador, com diálogos em português brasileiro, extração local dos recursos da ROM e suporte experimental a backups na nuvem.
 
 <p align="center">
   <a href="https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/"><strong>▶ JOGAR AGORA</strong></a>
@@ -12,19 +12,41 @@ Jogue **The Legend of Zelda: Ocarina of Time** diretamente no navegador, com di�
 
 ## Sobre o projeto
 
-Este repositório mantém uma versão web de Ocarina of Time baseada no projeto **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador desenvolvido no fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**.
+Este é um projeto pessoal criado a partir de uma necessidade simples: jogar Ocarina of Time no navegador sem precisar instalar um emulador ou configurar manualmente um ambiente complexo.
 
-A versão web usa o extrator ZAPD do Ship of Harkinian para gerar os recursos do jogo a partir de uma ROM selecionada pela própria pessoa, diretamente no navegador. O projeto também integra os diálogos em PT-BR e mantém os saves locais e na nuvem.
+A aplicação é baseada no **[Ship of Harkinian](https://github.com/HarbourMasters/Shipwright)** e no port para navegador do fork **[zalo/Shipwright](https://github.com/zalo/Shipwright)**. A adaptação integra diálogos em português brasileiro, extração de recursos a partir de uma ROM escolhida pelo usuário e um sistema de saves locais com opção de backup e restauração pela nuvem.
 
-O site não distribui uma ROM nem recebe o arquivo selecionado. Na primeira visita, cada pessoa escolhe sua própria ROM compatível; a extração acontece no navegador e o arquivo resultante fica no armazenamento local do navegador (IndexedDB).
+### Como funciona a ROM
+
+O jogo não inclui nem distribui uma ROM. Na primeira utilização em cada navegador ou dispositivo, a pessoa seleciona seu próprio arquivo compatível:
+
+- `.z64`
+- `.n64`
+- `.v64`
+
+O extrator ZAPD do Ship of Harkinian é executado no próprio navegador via WebAssembly para gerar os recursos necessários ao jogo. **O arquivo da ROM não é enviado ao servidor.** Os recursos extraídos ficam no armazenamento local do navegador (IndexedDB), permitindo reutilizá-los nas próximas visitas naquele mesmo navegador.
+
+Por isso, ao usar outro navegador ou computador, é necessário selecionar a ROM novamente. O backup de saves na nuvem não inclui a ROM nem os recursos extraídos.
+
+### Saves locais e backup na nuvem
+
+O progresso é mantido localmente no navegador. A aplicação também oferece autenticação com GitHub, por meio do Supabase, e funções de backup e restauração dos arquivos de save:
+
+1. Entre com sua conta GitHub pela interface do jogo.
+2. Se houver um backup associado à conta, a aplicação oferece a opção de restaurá-lo.
+3. Se houver apenas um save local, a interface permite escolher se ele será vinculado à conta ou mantido somente no navegador.
+4. Os backups enviados à nuvem são organizados em pastas identificadas pelo ID da conta autenticada.
+
+**Limitação conhecida:** o save local pertence ao navegador, não à conta GitHub. Ao trocar de conta no mesmo navegador, o progresso local existente pode continuar presente. A aplicação pede uma escolha para evitar uma associação acidental, mas o isolamento completo entre contas no mesmo navegador ainda não deve ser considerado garantido. Este recurso é experimental e foi desenvolvido para uso pessoal.
 
 ## Como jogar
 
 1. Abra **[o jogo no navegador](https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/)**.
-2. Na primeira visita, selecione uma ROM própria e compatível (`.z64`, `.n64` ou `.v64`).
-3. Aguarde a extração dos recursos no navegador; o arquivo da ROM não é enviado ao site.
-4. Nas próximas visitas, os recursos extraídos são reutilizados do armazenamento local.
-5. Use o teclado ou conecte um controle compatível.
+2. Na primeira visita naquele navegador, selecione sua ROM compatível (`.z64`, `.n64` ou `.v64`).
+3. Aguarde a extração dos recursos. O arquivo da ROM permanece no seu dispositivo.
+4. Nas próximas visitas no mesmo navegador, os recursos extraídos serão reutilizados.
+5. Opcionalmente, conecte sua conta GitHub para usar as funções de backup e restauração de saves.
+6. Use o teclado ou conecte um controle compatível.
 
 ### Controles padrão
 
@@ -43,36 +65,37 @@ Controles de jogo compatíveis também podem ser usados.
 
 ## Português brasileiro
 
-A integração PT-BR inclui os dados de mensagens e o código que os incorpora ao port web. A versão atual prioriza a legibilidade durante a gameplay: por uma limitação de renderização da fonte no navegador, caracteres acentuados são convertidos para equivalentes sem acento (por exemplo, **“coração” → “coracao”**).
+A integração PT-BR inclui os dados de mensagens e o código que os incorpora ao port web. Na versão atual, por uma limitação de renderização da fonte no navegador, alguns caracteres acentuados são convertidos para equivalentes sem acento (por exemplo, **“coração” → “coracao”**). O texto está em português, mas a acentuação gráfica ainda é um ponto de melhoria.
 
-Isso significa que o texto está em português, mas a acentuação gráfica ainda não está completa. A correção da fonte e a compatibilidade dos caracteres continuam sendo pontos de melhoria.
+## Tecnologias utilizadas
 
-## Tecnologias e fluxo de publicação
+| Tecnologia | Aplicação |
+|---|---|
+| C/C++ | Motor do jogo, a partir do Ship of Harkinian |
+| Emscripten / WebAssembly | Execução do motor e do extrator no navegador |
+| WebGL | Renderização gráfica |
+| JavaScript | Interface web, integração com autenticação e saves |
+| IndexedDB / IDBFS | Armazenamento local dos recursos e saves |
+| Supabase | Autenticação e armazenamento de backups |
+| GitHub OAuth | Login da conta |
+| Python | Validações, preparação de recursos e aplicação de patches |
+| GitHub Actions | Compilação automatizada |
+| GitHub Pages | Hospedagem da versão web |
 
-- **C/C++** — código do motor do jogo.
-- **Ship of Harkinian** — engine usada para executar Ocarina of Time.
-- **Emscripten / WebAssembly** — compilação do código para execução no navegador.
-- **WebGL** — renderização gráfica no navegador.
-- **Python** — validações, preparação dos recursos e aplicação dos patches.
-- **GitHub Actions** — compila o projeto nos servidores do GitHub.
-- **GitHub Pages** — hospeda a versão web publicada.
+## Experimento com inteligência artificial
 
-O workflow **Build PT-BR web game** valida os dados, prepara o pacote de runtime, compila o projeto e gera um artefato de site. A ROM e o arquivo `oot.o2r` de cada pessoa não são incluídos nesse artefato.
+Este projeto também teve como objetivo explorar o potencial de uma IA gratuita como principal ferramenta de desenvolvimento.
 
-## Estrutura relacionada ao PT-BR
+O código específico criado para esta adaptação foi produzido pelo ChatGPT a partir dos objetivos, requisitos e orientações definidos durante o processo. A participação humana ficou concentrada na concepção da ideia, definição do que deveria ser construído, decisões de direção, execução dos testes, avaliação dos resultados e identificação dos problemas que precisavam ser corrigidos.
 
-- `ports/soh/ptbr/` — dados e cabeçalhos da integração de mensagens e fonte.
-- `ports/soh/port_patches.py` — aplica as alterações necessárias ao código do port web.
-- `ports/soh/validate_ptbr.py` — valida os dados de mensagens antes da compilação.
-- `.github/workflows/build-web-ptbr.yml` — pipeline de compilação e deploy.
-- `ports/soh/make_site.py` — reúne os arquivos compilados em um site estático.
+O desenvolvimento aconteceu de forma iterativa: a IA propunha e implementava alterações; os resultados eram executados e avaliados para orientar as próximas etapas. O projeto documenta, na prática, tanto as possibilidades quanto os limites de utilizar IA no desenvolvimento de software.
+
+**Transparência:** esta adaptação não criou a engine do zero. Ela utiliza projetos e componentes preexistentes, listados nos créditos. A afirmação sobre o uso de IA refere-se ao código e às modificações específicas conduzidas para esta versão.
 
 ## Créditos e licenças
 
-Este trabalho é uma adaptação de projetos existentes, não uma engine criada do zero.
-
 - **Ship of Harkinian:** [HarbourMasters/Shipwright](https://github.com/HarbourMasters/Shipwright).
-- **Port Emscripten/WebGL:** [zalo/Shipwright](https://github.com/zalo/Shipwright).
+- **Port para navegador:** [zalo/Shipwright](https://github.com/zalo/Shipwright).
 - **Extração de recursos:** ZAPD / OTRExporter, incluídos no Ship of Harkinian.
 - **Dados de mensagens PT-BR:** integração baseada no conjunto de mensagens atribuído a Geraldo Cruzeiro presente no projeto.
 
@@ -82,12 +105,16 @@ Respeite as licenças e os créditos dos projetos e componentes de origem. **The
 
 ## Status
 
-- [x] Compilação web concluída no GitHub Actions.
-- [x] Publicação automática no GitHub Pages.
-- [x] Jogo acessível pelo navegador.
-- [x] Integração de diálogos PT-BR incluída na build publicada.
+**Concluído para uso pessoal.** A versão publicada foi aberta e testada pelo responsável pelo projeto. O jogo, a seleção da ROM e o carregamento dos recursos foram utilizados na prática. O backup em nuvem está implementado, mas seu comportamento ao alternar contas no mesmo navegador tem a limitação descrita acima.
+
+- [x] Execução do jogo no navegador.
+- [x] Seleção de ROM pelo usuário e extração local dos recursos.
+- [x] Reutilização dos recursos extraídos no mesmo navegador.
+- [x] Integração de diálogos em português brasileiro.
+- [x] Autenticação com GitHub via Supabase.
+- [x] Backup e restauração de saves na nuvem.
 - [ ] Acentuação completa na fonte do jogo.
-- [ ] Testes mais amplos em diferentes navegadores, dispositivos e controles.
+- [ ] Isolamento de saves totalmente validado ao alternar contas no mesmo navegador.
 
 **Acesse:** https://santosreislucas31-star.github.io/oot-cleanroom-ptbr/
 
@@ -106,4 +133,3 @@ As imagens abaixo mostram capturas do projeto em execução no navegador.
     <td align="center"><img src="https://raw.githubusercontent.com/santosreislucas31-star/oot-cleanroom-ptbr/main/fe94e80b-a64f-4d57-b9ad-192bb800ed26.png" alt="Captura de tela 5" width="420"></td>
   </tr>
 </table>
-
