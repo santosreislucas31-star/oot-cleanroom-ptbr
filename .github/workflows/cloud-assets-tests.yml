@@ -28,6 +28,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check Python syntax
+        run: python -m compileall -q ports/soh
+
       - name: Check JavaScript syntax and cloud behavior
         run: |
           node --check ports/soh/cloud_assets.js
