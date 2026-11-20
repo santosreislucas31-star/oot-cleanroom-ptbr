@@ -7,7 +7,6 @@ const source = await readFile(new URL("./cloud_assets.js", import.meta.url), "ut
 async function createRuntime({ session = null, cacheKeys = [], objects = {} } = {}) {
   const downloads = [];
   const cached = [];
-  const written = [];
   const statusNode = { textContent: "" };
   let moduleReady = 0;
 
@@ -40,10 +39,6 @@ async function createRuntime({ session = null, cacheKeys = [], objects = {} } = 
     _resolveOotCloudAssetsModule() { moduleReady += 1; },
     async listCachedFiles() { return cacheKeys; },
     async cacheFile(name, buffer) { cached.push({ name, size: buffer.byteLength }); },
-    writeOtrToFS(name, buffer) {
-      written.push({ name, size: buffer.byteLength });
-      return true;
-    },
   };
 
   const context = {
@@ -56,7 +51,7 @@ async function createRuntime({ session = null, cacheKeys = [], objects = {} } = 
   vm.runInContext(source, context, { filename: "cloud_assets.js" });
 
   return {
-    window, statusNode, downloads, cached, written,
+    window, statusNode, downloads, cached,
     getModuleReady: () => moduleReady,
   };
 }
@@ -73,7 +68,6 @@ async function createRuntime({ session = null, cacheKeys = [], objects = {} } = 
   assert.equal(result, true);
   assert.deepEqual(runtime.downloads, ["user-123/oot.o2r"]);
   assert.deepEqual(runtime.cached, [{ name: "oot.o2r", size: 4 }]);
-  assert.deepEqual(runtime.written, [{ name: "oot.o2r", size: 4 }]);
   assert.match(runtime.statusNode.textContent, /carregados/i);
   assert.equal(runtime.getModuleReady(), 1);
 }
