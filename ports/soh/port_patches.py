@@ -105,6 +105,34 @@ void web_apply_anchor_config() {
     ("soh/soh/SaveManager.cpp",
      "    output << std::setw(1) << globalBlock << std::endl;",
      "    output << std::setw(1) << globalBlock << std::endl;\n    output.close();\n#ifdef __EMSCRIPTEN__\n    web_save_to_idb();\n#endif")
+    # Load private account assets before falling back to the local cache / ROM picker.
+    ("soh/soh/web/shell.html",
+     """          // Check URL hash for o2r/ROM parameters first, then fall back to cached files
+          if (checkHashO2r()) {
+            // Downloading o2r files from URL hash
+          } else if (!checkHashRom()) {
+            checkCachedOtr();
+          }""",
+     """          // URL-supplied files take precedence over the account's private archive.
+          if (checkHashO2r() || checkHashRom()) {
+            // A custom URL resource or ROM extraction already owns startup.
+          } else {
+            var cloudModuleReady = window.ootCloudAssetsModuleReady || Promise.resolve();
+            cloudModuleReady.then(function() {
+              var prepare = window.ootCloudAssets &&
+                typeof window.ootCloudAssets.prepare === 'function'
+                ? window.ootCloudAssets.prepare()
+                : Promise.resolve(false);
+              return Promise.resolve(prepare).catch(function(error) {
+                console.warn('[Cloud Assets] Startup failed:', error);
+              });
+            }).then(function() {
+              checkCachedOtr();
+            }).catch(function(error) {
+              console.warn('[Cloud Assets] Startup failed:', error);
+              checkCachedOtr();
+            });
+          }"""),
 ]
 
 
