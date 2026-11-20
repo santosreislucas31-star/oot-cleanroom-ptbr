@@ -6,11 +6,13 @@ Os recursos do jogo são extraídos da sua ROM diretamente neste navegador. A RO
 <div id="cr-auth" style="position:fixed;top:12px;right:12px;z-index:1000;display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid #46515f;border-radius:8px;background:rgba(12,17,24,.92);color:#e8edf3;font:12px/1.4 -apple-system,Segoe UI,sans-serif">
   <span data-auth-status>Verificando conta...</span>
   <span data-cloud-status style="color:#aab7c4"></span>
+  <span data-assets-status style="color:#aab7c4"></span>
   <button data-auth-login type="button" hidden style="cursor:pointer;padding:6px 10px;border:0;border-radius:5px;background:#238636;color:white">Entrar com GitHub</button>
   <button data-auth-logout type="button" hidden style="cursor:pointer;padding:6px 10px;border:1px solid #697586;border-radius:5px;background:#26313d;color:white">Sair</button>
 </div>
 <script type="module" src="./cloud_auth.js"></script>
 <script type="module" src="./cloud_saves.js"></script>
+<script type="module" src="./cloud_assets.js"></script>
 <script>
 (function(){var t=setInterval(function(){var o=document.getElementById('overlay');if(o&&o.classList.contains('hidden')){var e=document.getElementById('cr-info');if(e)e.style.display='none';clearInterval(t);}},500);})();
 </script>
