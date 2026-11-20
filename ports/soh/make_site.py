@@ -164,7 +164,7 @@ def main(argv):
     boot = (
         "<script>window._devCvars='gSettings.BootSequence:1';try{var _dv=new URLSearchParams(location.search).get('dev');"
         "if(_dv)window._devCvars=_dv;}catch(e){}</script>"
-        "<script>window.ootCloudAssetsModuleReady=new Promise(function(resolve){var done=false;window._resolveOotCloudAssetsModule=function(){if(done)return;done=true;resolve();};setTimeout(function(){if(done)return;done=true;resolve();},8000);});</script>"
+        "<script>window.ootCloudAssetsModuleReady=new Promise(function(resolve){var done=false;window._resolveOotCloudAssetsModule=function(){if(done)return;done=true;resolve();};setTimeout(function(){if(done)return;done=true;resolve();},30000);});</script>"
     )
     if "<head>" not in html:
         raise RuntimeError("Generated HTML has no <head> element")
