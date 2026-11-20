@@ -1,0 +1,41 @@
+name: Cloud assets regression tests
+
+on:
+  push:
+    branches:
+      - feature/cloud-assets-sync
+  pull_request:
+    branches:
+      - feature/local-rom-extraction
+
+permissions:
+  contents: read
+
+jobs:
+  cloud-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Python syntax
+        run: python -m compileall -q ports/soh
+
+      - name: Check JavaScript syntax and cloud behavior
+        run: |
+          node --check ports/soh/cloud_assets.js
+          node ports/soh/test_cloud_assets.mjs
+          node ports/soh/test_cloud_saves.mjs
+
+      - name: Test generated site assembly
+        run: python -m unittest ports.soh.test_make_site
