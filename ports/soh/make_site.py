@@ -153,7 +153,7 @@ def main(argv):
         shutil.copyfile(os.path.join(build, name), os.path.join(site, name))
     shutil.copyfile(soh_o2r, os.path.join(site, "soh.o2r"))
 
-    for module in ("cloud_auth.js", "cloud_saves.js"):
+    for module in ("cloud_auth.js", "cloud_saves.js", "cloud_assets.js"):
         source = os.path.join(HERE, module)
         if not os.path.isfile(source):
             raise FileNotFoundError("Required browser module is missing: " + source)
@@ -164,6 +164,7 @@ def main(argv):
     boot = (
         "<script>window._devCvars='gSettings.BootSequence:1';try{var _dv=new URLSearchParams(location.search).get('dev');"
         "if(_dv)window._devCvars=_dv;}catch(e){}</script>"
+        "<script>window.ootCloudAssetsModuleReady=new Promise(function(resolve){var done=false;window._resolveOotCloudAssetsModule=function(){if(done)return;done=true;resolve();};setTimeout(function(){if(done)return;done=true;resolve();},8000);});</script>"
     )
     if "<head>" not in html:
         raise RuntimeError("Generated HTML has no <head> element")
@@ -210,7 +211,7 @@ def main(argv):
 
     expected = {
         "index.html", "soh.js", "soh.wasm", "soh.data", "soh.o2r",
-        "cloud_auth.js", "cloud_saves.js",
+        "cloud_auth.js", "cloud_saves.js", "cloud_assets.js",
     }
     actual = set(os.listdir(site))
     if actual != expected:
@@ -230,7 +231,7 @@ def main(argv):
         raise RuntimeError("Emscripten loader does not reference both soh.wasm and soh.data")
     if not any(marker in html for marker in ("src=soh.js", 'src="soh.js"', "src='soh.js'")):
         raise RuntimeError("index.html does not load soh.js")
-    for module in ("cloud_auth.js", "cloud_saves.js"):
+    for module in ("cloud_auth.js", "cloud_saves.js", "cloud_assets.js"):
         if module not in html:
             raise RuntimeError("index.html does not load " + module)
     if "soh.o2r" not in html or "Module._web_extract_rom" not in html:
