@@ -13,6 +13,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 // Expose only the initialized public client for the future save-sync module.
 window.ootSupabase = supabase;
+window.dispatchEvent(new Event("oot-supabase-ready"));
 
 const root = document.getElementById("cr-auth");
 if (root) {
