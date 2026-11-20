@@ -72,8 +72,8 @@ async function prepareCloudAssets() {
     return false;
   }
 
-  if (typeof window.cacheFile !== "function" || typeof window.writeOtrToFS !== "function") {
-    throw new Error("Funções de cache do jogo indisponíveis.");
+  if (typeof window.cacheFile !== "function") {
+    throw new Error("Função de cache do jogo indisponível.");
   }
 
   setAssetsStatus("Baixando recursos privados da nuvem...");
@@ -93,12 +93,9 @@ async function prepareCloudAssets() {
     throw new Error("A conta mudou durante o download dos recursos.");
   }
 
+  // checkCachedOtr() owns the Emscripten FS write and final startup sequence.
+  // Store the exact downloaded ArrayBuffer in the existing IndexedDB cache.
   await window.cacheFile(archive.name, buffer.slice(0));
-  const written = window.writeOtrToFS(archive.name, buffer);
-  if (!written) {
-    // The archive is safely cached; checkCachedOtr() will retry the FS write.
-    console.warn("[Cloud Assets] Immediate filesystem write failed; cached copy will be retried.");
-  }
 
   setAssetsStatus("Recursos da nuvem carregados");
   console.info("[Cloud Assets] Loaded", archive.name, buffer.byteLength, "bytes");
