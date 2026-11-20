@@ -40,7 +40,9 @@ jobs:
         run: |
           node --check --input-type=module < ports/soh/cloud_auth.js
           node --check ports/soh/cloud_saves.js
+          node --check ports/soh/cloud_assets.js
           node ports/soh/test_cloud_saves.mjs
+          node ports/soh/test_cloud_assets.mjs
 
       - name: Setup Emscripten
         uses: emscripten-core/setup-emsdk@v15
