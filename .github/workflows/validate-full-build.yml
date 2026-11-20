@@ -1,0 +1,130 @@
+name: Validate full Emscripten build (no deployment)
+
+on:
+  push:
+    branches:
+      - feature/cloud-assets-sync
+  pull_request:
+    branches:
+      - feature/local-rom-extraction
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-web:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout PT-BR project
+        uses: actions/checkout@v7
+
+      - name: Checkout Emscripten web engine
+        uses: actions/checkout@v7
+        with:
+          repository: zalo/Shipwright
+          ref: f81ff64afdd8e0489237bd03c6b026582f6dc70d
+          path: sohweb
+          submodules: recursive
+
+      - name: Record engine revision and normalize source timestamps
+        run: |
+          echo "SOHWEB_SHA=$(git -C sohweb rev-parse HEAD)" >> "$GITHUB_ENV"
+          find sohweb -type f -not -path '*/.git/*' \
+            -exec touch -d '2000-01-01 00:00:00 UTC' {} +
+
+      - name: Install system and Python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git python3 python3-numpy python3-pil cmake ninja-build \
+            libglew-dev libsdl2-dev libz-dev zip pkg-config
+
+      - name: Check browser JavaScript and cloud behavior
+        run: |
+          node --check --input-type=module < ports/soh/cloud_auth.js
+          node --check ports/soh/cloud_saves.js
+          node --check ports/soh/cloud_assets.js
+          node ports/soh/test_cloud_saves.mjs
+          node ports/soh/test_cloud_assets.mjs
+
+      - name: Setup Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.10
+          actions-cache-folder: emsdk-cache
+
+      - name: Download and validate public SoH runtime archive
+        run: |
+          mkdir -p resource-input
+          curl --fail --location --retry 3 \
+            https://andrewnakas.github.io/oot-cleanroom/soh.o2r \
+            --output resource-input/soh.o2r
+          test -s resource-input/soh.o2r
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile("resource-input/soh.o2r") as archive:
+              if not archive.namelist() or "portVersion" not in archive.namelist():
+                  raise SystemExit("Invalid SoH runtime archive")
+              bad = archive.testzip()
+              if bad:
+                  raise SystemExit(f"Corrupt archive entry: {bad}")
+          print("Runtime archive OK")
+          PY
+
+      - name: Validate PT-BR data and Python dependencies
+        run: |
+          python3 -c "import numpy; import PIL; from games.oot import o2r, drawn, extract_spec; from cleanroom.gfx import texfmt"
+          python3 -m compileall -q ports/soh games/oot cleanroom
+          python3 -m unittest ports.soh.test_make_site
+          python3 -m ports.soh.validate_ptbr
+
+      - name: Install PT-BR sources and apply web patches
+        run: python3 -m ports.soh.port_patches "$GITHUB_WORKSPACE/sohweb"
+
+      - name: Prepare clean SoH resource archive
+        run: |
+          python3 -m ports.soh.clean_soh \
+            resource-input/soh.o2r resource-input/soh-clean.o2r
+          test -s resource-input/soh-clean.o2r
+
+      - name: Restore incremental Emscripten build
+        uses: actions/cache/restore@v5
+        with:
+          path: build-web
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-${{ hashFiles('ports/soh/ptbr/**', 'ports/soh/port_patches.py', 'ports/soh/cloud_assets.js', '.github/workflows/validate-full-build.yml') }}
+          restore-keys: |
+            web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-
+
+      - name: Configure Emscripten build
+        run: |
+          emcmake cmake -B build-web -S sohweb -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DUSE_OPENGLES=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            "-DCMAKE_CXX_FLAGS=-DFMT_CONSTEVAL="
+
+      - name: Compile Ship of Harkinian
+        run: emmake cmake --build build-web --target soh --parallel 2
+
+      - name: Save incremental Emscripten build
+        if: success()
+        uses: actions/cache/save@v5
+        with:
+          path: build-web
+          key: web-${{ runner.os }}-emsdk-6.0.10-${{ env.SOHWEB_SHA }}-${{ hashFiles('ports/soh/ptbr/**', 'ports/soh/port_patches.py', 'ports/soh/cloud_assets.js', '.github/workflows/validate-full-build.yml') }}
+
+      - name: Assemble and verify playable site
+        run: |
+          mkdir -p build-web/soh
+          cp resource-input/soh-clean.o2r build-web/soh/soh.o2r
+          python3 ports/soh/make_site.py \
+            build-web/soh build-web/soh/soh.o2r site
+
+      - name: Upload test build artifact (not deployed)
+        uses: actions/upload-artifact@v7
+        with:
+          name: ocarina-ptbr-cloud-assets-test
+          path: site/
+          if-no-files-found: error
+          retention-days: 7
