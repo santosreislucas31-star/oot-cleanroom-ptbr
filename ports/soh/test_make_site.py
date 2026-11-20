@@ -102,11 +102,13 @@ class GeneratedHtmlPatchTests(unittest.TestCase):
             main(["make_site.py", build, runtime, site])
             self.assertEqual(
                 set(os.listdir(site)),
-                {"index.html", "soh.js", "soh.wasm", "soh.data", "soh.o2r", "cloud_auth.js", "cloud_saves.js"},
+                {"index.html", "soh.js", "soh.wasm", "soh.data", "soh.o2r", "cloud_auth.js", "cloud_saves.js", "cloud_assets.js"},
             )
             with open(os.path.join(site, "index.html"), encoding="utf-8") as file:
                 output = file.read()
             self.assertIn(CACHE_DB_NAME, output)
+            self.assertIn("window.ootCloudAssetsModuleReady", output)
+            self.assertIn("cloud_assets.js", output)
             self.assertNotIn("<h1>Ship of Harkinian</h1>", output)
 
 
